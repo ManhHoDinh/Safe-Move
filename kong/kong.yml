@@ -1,0 +1,20 @@
+_format_version: "2.1"
+
+services:
+  - name: todo-api-service
+    host: todo_api
+    path: /
+    port: 8000
+    routes:
+      - name: todo-routes
+        hosts: 
+          - todo_api
+          - localhost
+        paths:
+          - /todo/
+        strip_path: true
+  
+
+
+
+ 
