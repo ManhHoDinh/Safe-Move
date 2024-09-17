@@ -2,7 +2,7 @@
 FROM nginx:alpine
 
 # Copy file cấu hình NGINX vào container
-COPY nginx.conf /etc/nginx/nginx.conf
+COPY nginx_config.conf /etc/nginx/nginx.conf
 
 # Expose cổng 8080
 EXPOSE 8080
