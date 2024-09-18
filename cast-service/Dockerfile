@@ -11,4 +11,6 @@ RUN apt-get update \
 RUN pip install -r /app/requirements.txt \
     && rm -rf /root/.cache/pip
 
-COPY . /app/
+EXPOSE 8000
+
+CMD ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]

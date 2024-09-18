@@ -5,7 +5,7 @@ from sqlalchemy import (Column, Integer, MetaData, String, Table,
 
 from databases import Database
 
-DATABASE_URI = os.getenv('DATABASE_URI')
+DATABASE_URI = "postgres://default:6RzXPFvlS0uO@ep-quiet-firefly-a1v18ey4.ap-southeast-1.aws.neon.tech:5432/verceldb?sslmode=require"
 
 engine = create_engine(DATABASE_URI)
 metadata = MetaData()
