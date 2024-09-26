@@ -5,7 +5,7 @@ from sqlalchemy import (Column, DateTime, Integer, MetaData, String, Table,
 
 from databases import Database
 
-DATABASE_URI = os.getenv('DATABASE_URI')
+DATABASE_URI = 'postgresql://movie-service-database_owner:DcMx0NO8ShfQ@ep-muddy-scene-a1mdwe61.ap-southeast-1.aws.neon.tech/movie-service-database?sslmode=require'
 
 engine = create_engine(DATABASE_URI)
 metadata = MetaData()
