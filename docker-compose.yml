@@ -50,11 +50,12 @@ services:
       volumes:
         - ./auth-service/:/app/
       ports:
-        - 8002:8000
+        - 8003:8000
       environment:
         - DATABASE_URI=postgresql://auth_db_username:auth_db_password@auth_db/auth_db_dev
       depends_on:
         - auth_db
+  
   auth_db:
       image: postgres:12.1-alpine
       volumes:
@@ -77,3 +78,4 @@ services:
 volumes:
   postgres_data_movie:
   postgres_data_cast:
+  postgres_data_auth:
