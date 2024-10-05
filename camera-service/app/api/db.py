@@ -1,13 +1,22 @@
-import os
+from sqlalchemy import (
+    Table,
+    Column,
+    Integer,
+    String,
+    Date,
+    Boolean,
+    Enum,
+    MetaData
+)
+from sqlalchemy.dialects.postgresql import POINT 
+import enum
 
-from sqlalchemy import (Column, DateTime, Integer, MetaData, String, Table,
-                        create_engine, ARRAY)
+class FloodLevel(enum.Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+    danger = "danger"
 
-from databases import Database
-
-DATABASE_URI = 'postgresql://movie-service-database_owner:DcMx0NO8ShfQ@ep-muddy-scene-a1mdwe61.ap-southeast-1.aws.neon.tech/movie-service-database?sslmode=require'
-
-engine = create_engine(DATABASE_URI)
 metadata = MetaData()
 
 cameras = Table(
@@ -15,7 +24,11 @@ cameras = Table(
     metadata,
     Column('id', Integer, primary_key=True),
     Column('name', String(50)),
-    Column('url', String(250))
+    Column('url', String(250)),
+    Column('createdAt', Date),
+    Column('updatedAt', Date),
+    Column('isActive', Boolean),
+    Column('location', POINT), 
+    Column('address', String(250)),
+    Column('floodLevel', Enum(FloodLevel)) 
 )
-
-database = Database(DATABASE_URI)
