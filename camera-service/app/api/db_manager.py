@@ -1,47 +1,52 @@
-from sqlalchemy import insert, update, delete, select
-from app.api.models import Camera
-from app.api.database import database, cameras
+from sqlalchemy import delete
+from app.api.models import CameraIn
+from app.api.db import cameras, database
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 async def get_all_cameras():
     query = cameras.select()
-    return await database.fetch_all(query=query)
+    a = await database.fetch_all(query=query)
+    for i in a:
+        logger.debug(i)
 
-async def get_camera(id: string):
+    return a
+
+
+async def get_camera(id: str):
     query = cameras.select().where(cameras.c.id == id)
     return await database.fetch_one(query=query)
 
-async def create_camera(payload: Camera):
-    query = insert(cameras).values(
-        name=payload.name,
-        url=payload.url,
-        createdAt=payload.createdAt,
-        updatedAt=payload.updatedAt,
-        isActive=payload.isActive,
-        location=payload.location,
-        address=payload.address,
-        floodLevel=payload.floodLevel.value
-    )
+
+async def create_camera(payload: CameraIn):
+    query = cameras.insert().values(**payload.dict())
     camera_id = await database.execute(query)
     return {**payload.dict(), "id": camera_id}
 
-async def update_camera(id: int, payload: Camera):
+
+async def update_camera(id: int, payload: CameraIn):
+    camera = await get_camera(id=id)
+    if not camera:
+        return None
+
+    update_data = payload.dict(exclude_unset=True)
+    camera_in_db = CameraIn(**camera)
+
+    updated_camera = camera_in_db.copy(update=update_data)
+
     query = (
-        update(cameras)
+        cameras
+        .update()
         .where(cameras.c.id == id)
-        .values(
-            name=payload.name,
-            url=payload.url,
-            updatedAt=payload.updatedAt,
-            isActive=payload.isActive,
-            location=payload.location,
-            address=payload.address,
-            floodLevel=payload.floodLevel.value
-        )
+        .values(**updated_camera.dict())
     )
-    await database.execute(query)
-    return {**payload.dict(), "id": id}
+
+    return await database.execute(query=query)
+
 
 async def delete_camera(id: int):
     query = delete(cameras).where(cameras.c.id == id)
     await database.execute(query)
-    return {"message": "Camera deleted successfully"}
+    return "Camera deleted successfully"
