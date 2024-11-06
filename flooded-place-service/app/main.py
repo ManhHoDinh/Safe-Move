@@ -1,0 +1,22 @@
+from fastapi import FastAPI
+from app.api.floodPointAPI import router as flood_point_router
+from app.api.database import engine, Base
+import asyncio
+
+app = FastAPI()
+
+Base.metadata.create_all(bind=engine)
+
+app.include_router(flood_point_router)
+
+# Khởi động scheduler khi ứng dụng khởi chạy
+@app.on_event("startup")
+def start_scheduler():
+    asyncio.create_task(timer_task)
+    
+async def timer_task():
+    while True:
+        print("Thực hiện nhiệm vụ.")
+        await flood_point_router.update_flood_points()
+        print("Xử lý xong.")
+        await asyncio.sleep(5)  # Đợi 60 giây trước khi thực hiện nhiệm vụ tiếp theo
