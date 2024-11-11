@@ -1,36 +1,34 @@
-from pydantic import BaseModel
-from typing import Optional
-from enum import Enum
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
+CAMERA_API_URL = "https://api.notis.vn/v4/cameras/bybbox?lat1=11.160767&lng1=106.554166&lat2=9.45&lng2=128.99999"
 
 
-class FloodLevel(str, Enum):
-    low = "low"
-    medium = "medium"
-    high = "high"
-    danger = "danger"
+class Location(BaseModel):
+    type: str
+    coordinates: List[float]
 
 
-class CameraIn(BaseModel):
+class Camera(BaseModel):
+    camera_id: str = Field(..., alias="_id")
+    id: str
     name: str
-    url: str
-    createdAt: Optional[str]
-    updatedAt: Optional[str]
-    isActive: bool
-    longitude: float
-    latitude: float
-    address: Optional[str]
-    floodLevel: FloodLevel
+    loc: Location  # Expect loc as a Location object
+    values: Dict[str, str]  # Dict to hold 'ip' or other dynamic keys
+    dist: str
+    ptz: bool
+    angle: Optional[int] = None  # Optional to handle missing 'angle'
+    liveviewUrl: str
+    isEnabled: bool
+    lastModified: datetime = datetime.utcnow()
 
 
-class CameraOut(CameraIn):
-    id: int
+class CameraStatusUpdate(BaseModel):
+    status: str
 
 
-class CameraUpdate(CameraIn):
-    name: Optional[str]
-    url: Optional[str]
-    isActive: Optional[bool]
-    longitude: Optional[float]
-    latitude: Optional[float]
-    address: Optional[str]
-    floodLevel: Optional[FloodLevel]
+class CameraUpdateRequest(BaseModel):
+    camera_id: str
+    is_enabled: bool

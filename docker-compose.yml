@@ -88,7 +88,7 @@ services:
       - cast_service
       - movie_service
       - camera_service
-
+      
 volumes:
   postgres_data_movie:
   postgres_data_cast:
