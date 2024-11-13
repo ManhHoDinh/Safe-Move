@@ -1,32 +1,52 @@
-from typing import List
-from fastapi import APIRouter
-
-from app.api.models import CameraIn, CameraOut, CameraUpdate
+from typing import List, Dict, Optional
+from fastapi import APIRouter, HTTPException, Depends
+from app.api.models import Camera
 from app.api import db_manager
+from app.api.db_manager import DBManager
+from sqlalchemy.orm import Session
+from app.api.db import get_db
+from databases import Database
 
 cameras = APIRouter()
 
 
-@cameras.get('/', response_model=List[CameraOut])
-async def get_cameras():
-    return await db_manager.get_all_cameras()
+@cameras.get("/", response_model=List[Camera])
+async def get_all_cameras(db: Session = Depends(get_db)):
+    db_manager = DBManager(db)
+    return await db_manager.fetch_cameras()
 
 
-@cameras.get('/{id}', response_model=CameraOut)
-async def get_camera_detail(id: int):
-    return await db_manager.get_camera(id)
+@cameras.get("/cameras", response_model=List[Camera])
+async def list_cameras(
+    is_enabled: Optional[bool] = None,
+    search: Optional[str] = None,
+    db=Depends(get_db)
+) -> List[Camera]:
+    return await db_manager.get_camera_list(db, is_enabled, search)
 
 
-@cameras.post('/', response_model=CameraOut, status_code=201)
-async def create_camera(payload: CameraIn):
-    return await db_manager.create_camera(payload)
+@cameras.get("/cameras/{camera_id}")
+async def read_camera(camera_id: str, db=Depends(get_db)):
+    camera = await db_manager.get_camera_by_id(db, camera_id)
+    if not camera:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    return camera
 
 
-@cameras.patch('/{id}', response_model=CameraOut)
-async def update_camera(id: int, payload: CameraUpdate):
-    return await db_manager.update_camera(id, payload)
+@cameras.put("/cameras/status")
+async def modify_multiple_camera_status(
+    camera_id_list: List[str],
+    is_enabled: bool,
+    db: Database = Depends(get_db)
+):
+    try:
+        updated_cameras = await db_manager.update_camera_statuses(db, camera_id_list, is_enabled)
 
-
-@cameras.delete('/{id}', status_code=200)
-async def delete_camera(id: int):
-    return await db_manager.delete_camera(id)
+        if updated_cameras:
+            return {"updated": len(updated_cameras), "status": "success"}
+        else:
+            raise HTTPException(
+                status_code=404, detail="No cameras found or updated")
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Internal server error: {str(e)}")

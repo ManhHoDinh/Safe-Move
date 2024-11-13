@@ -1,52 +1,110 @@
-from sqlalchemy import delete
-from app.api.models import CameraIn
-from app.api.db import cameras, database
-import logging
+from datetime import datetime, timezone
+from typing import Dict, List, Optional
 
-logger = logging.getLogger(__name__)
+import httpx
+from app.api.db import cameras, get_db
+from app.api.models import CAMERA_API_URL, Camera
+from databases import Database
+from pydantic import ValidationError
+from sqlalchemy import insert, or_, select, update
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import Session
 
-
-async def get_all_cameras():
-    query = cameras.select()
-    a = await database.fetch_all(query=query)
-    for i in a:
-        logger.debug(i)
-
-    return a
+camera_status = {}
 
 
-async def get_camera(id: str):
-    query = cameras.select().where(cameras.c.id == id)
-    return await database.fetch_one(query=query)
+def truncate_string(value: str, max_length: int = 50) -> str:
+    if isinstance(value, str) and len(value) > max_length:
+        return value[:max_length]
+    return value
 
 
-async def create_camera(payload: CameraIn):
-    query = cameras.insert().values(**payload.dict())
-    camera_id = await database.execute(query)
-    return {**payload.dict(), "id": camera_id}
+class DBManager:
+    def __init__(self, session: get_db):
+        self.session = session
+
+    async def fetch_cameras_from_api(self) -> List[Dict]:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(CAMERA_API_URL)
+            response.raise_for_status()
+            data = response.json()
+            print(f"Fetched camera data: {data}")
+            return data
+
+    async def fetch_cameras(self) -> List[Dict]:
+        api_data = await self.fetch_cameras_from_api()
+
+        for camera in api_data:
+            stmt = select([cameras.c.id]).where(cameras.c.id == camera['id'])
+            result = await self.session.fetch_one(stmt)
+
+            if result is None:
+                new_camera_data = {
+                    '_id': camera['_id'],
+                    'id': camera['id'],
+                    'name': truncate_string(camera['name']),
+                    'loc': camera['loc'],
+                    'values': camera['values'],
+                    'dist': truncate_string(camera['dist']),
+                    'ptz': camera['ptz'],
+                    'angle': camera.get('angle'),
+                    'liveviewUrl': truncate_string(camera['liveviewUrl']),
+                    'isEnabled': False,
+                    'lastmodified':  datetime.utcnow()
+                }
+                stmt = insert(cameras).values(new_camera_data)
+                try:
+                    await self.session.execute(stmt)
+                except IntegrityError:
+                    pass
+        stmt = select([cameras])
+        result = await self.session.fetch_all(stmt)
+        return result
 
 
-async def update_camera(id: int, payload: CameraIn):
-    camera = await get_camera(id=id)
-    if not camera:
-        return None
-
-    update_data = payload.dict(exclude_unset=True)
-    camera_in_db = CameraIn(**camera)
-
-    updated_camera = camera_in_db.copy(update=update_data)
-
-    query = (
-        cameras
-        .update()
-        .where(cameras.c.id == id)
-        .values(**updated_camera.dict())
-    )
-
-    return await database.execute(query=query)
+async def get_camera_by_id(db: Database, camera_id: str) -> dict:
+    query = select([cameras]).where(cameras.c._id == camera_id)
+    result = await db.fetch_one(query)
+    return result
 
 
-async def delete_camera(id: int):
-    query = delete(cameras).where(cameras.c.id == id)
-    await database.execute(query)
-    return "Camera deleted successfully"
+async def update_camera_statuses(db: Database, camera_ids: List[str], is_enabled: bool) -> List[dict]:
+    updated_cameras = []
+
+    for camera_id in camera_ids:
+        query = (
+            update(cameras)
+            .where(cameras.c.id == camera_id)
+            .values(isEnabled=is_enabled, lastmodified=datetime.utcnow())
+            .returning(cameras)  # Optional: returns the updated row
+        )
+        print("3", camera_id)
+        result = await db.fetch_one(query)
+        if result:
+            updated_cameras.append(result)
+
+    return updated_cameras
+
+
+async def get_camera_list(
+    db: Database,
+    is_enabled: Optional[bool] = None,
+    search: Optional[str] = None
+) -> List[Camera]:
+    query = select([cameras])
+
+    if is_enabled is not None:
+        query = query.where(cameras.c.isEnabled == is_enabled)
+
+    if search:
+        search_pattern = f"%{search}%"
+        query = query.where(
+            or_(
+                cameras.c.name.ilike(search_pattern),
+                cameras.c.id.ilike(search_pattern),
+                cameras.c.dist.ilike(search_pattern)
+            )
+        )
+
+    results = await db.fetch_all(query)
+    return [Camera(**result) for result in results]

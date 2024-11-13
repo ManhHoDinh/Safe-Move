@@ -1,20 +1,11 @@
-from sqlalchemy import (
-    Table,
-    Column,
-    Integer,
-    String,
-    Date,
-    Boolean,
-    Enum,
-    MetaData,
-    Float,
-    create_engine
-)
+from datetime import datetime, timezone
+
 from databases import Database
-from app.api.models import FloodLevel
+from sqlalchemy import (JSON, Boolean, Column, DateTime, Float, Integer,
+                        MetaData, String, Table, create_engine)
+from sqlalchemy.dialects.postgresql import JSONB
 
-
-DATABASE_URI = 'postgresql://movie-service-database_owner:DcMx0NO8ShfQ@ep-muddy-scene-a1mdwe61.ap-southeast-1.aws.neon.tech/movie-service-database?sslmode=require'
+DATABASE_URI = 'postgresql://cameras_owner:vgQ6znmdqUo4@ep-holy-unit-a168mnk4.ap-southeast-1.aws.neon.tech/cameras?sslmode=require'
 
 engine = create_engine(DATABASE_URI)
 metadata = MetaData()
@@ -22,16 +13,21 @@ metadata = MetaData()
 cameras = Table(
     'cameras',
     metadata,
-    Column('id', Integer, primary_key=True),
-    Column('name', String(50)),
-    Column('url', String(250)),
-    Column('createdAt', Date),
-    Column('updatedAt', Date),
-    Column('isActive', Boolean),
-    Column('longitude', Float),
-    Column('latitude', Float),
-    Column('address', String(250)),
-    Column('floodLevel', Enum(FloodLevel))
+    Column('_id', String, primary_key=True),
+    Column('id', String, unique=True, nullable=False),
+    Column('name', String(50), nullable=False),
+    Column('loc', JSONB),
+    Column('values', JSONB),
+    Column('dist', String(50)),
+    Column('angle', Integer),
+    Column('ptz', Boolean),
+    Column('liveviewUrl', String(250)),
+    Column('isEnabled', Boolean, default=False),
+    Column('lastmodified', DateTime, default=datetime.utcnow())
 )
 
 database = Database(DATABASE_URI)
+
+
+async def get_db():
+    return database
