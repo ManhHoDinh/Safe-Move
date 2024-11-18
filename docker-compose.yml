@@ -78,6 +78,20 @@ services:
       depends_on:
         - movie_db
 
+      
+  flood_information_service:
+      build: ./flood-information-service
+      command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+      volumes:
+        - ./flood-information-service/:/app/
+      ports:
+        - 8005:8000
+      environment:
+        - DATABASE_URI=postgresql://movie_db_username:movie_db_password@movie_db/movie_db_dev
+        - CAST_SERVICE_HOST_URL=http://cast_service:8000/api/v1/casts/
+      depends_on:
+        - movie_db
+
   nginx:
     image: nginx:latest
     ports:
@@ -88,6 +102,7 @@ services:
       - cast_service
       - movie_service
       - camera_service
+      - flood_information_service
       
 volumes:
   postgres_data_movie:
