@@ -6,7 +6,7 @@ class FloodPointCreate(BaseModel):
     latitude: float
     longitude: float
     flood_level: int
-    expiration_time: datetime  # Thêm thời gian hết hạn
+    expiration_time: datetime  # Thời gian hết hạn
 
 class FloodPointResponse(BaseModel):
     id: int
@@ -15,7 +15,5 @@ class FloodPointResponse(BaseModel):
     longitude: float
     flood_level: int
     expiration_time: datetime
-
-
     class Config:
         orm_mode = True
