@@ -1,7 +1,7 @@
 from supabase import create_client
 from fastapi import File, UploadFile
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from app.api.models import FloodInformation, FloodInformationCreate, EStatus
 from app.api import db_manager
 from app.api.db import get_db
@@ -29,10 +29,10 @@ async def list_flood_information(
 
 @flood_information.post("/", response_model=FloodInformation)
 async def create_flood_info(
-    flood_info: FloodInformationCreate, db=Depends(get_db)
+    flood_info: str, file: UploadFile = File(...), db=Depends(get_db)
 ):
     try:
-        new_flood_info = await db_manager.create_flood_information(db, flood_info)
+        new_flood_info = await db_manager.create_flood_information(db, flood_info, file)
         return new_flood_info
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
