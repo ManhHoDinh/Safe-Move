@@ -12,11 +12,10 @@ async def get_flood_information(
     search: Optional[str] = None,
     status: Optional[str] = None
 ) -> List[FloodInformation]:
-    query = select([flood_information])
+    query = select(flood_information)
 
     conditions = []
 
-    # Add search condition if it exists
     if search:
         search_pattern = f"%{search}%"
         conditions.append(
@@ -40,22 +39,25 @@ async def get_flood_information(
 
 
 async def create_flood_information(db: Database, flood_info: FloodInformationCreate):
-    new_flood_info = {
-        "_id": str(uuid4()),
-        "userName": flood_info.userName,
-        "userId": flood_info.userId,
-        "location": flood_info.location.dict(),
-        "locationName": flood_info.locationName,
-        "status": flood_info.status,
-        "floodLevel": flood_info.floodLevel,
-        "date": flood_info.date,
-    }
-    print('new_flood_info', new_flood_info)
+    try:
+        new_flood_info = {
+            "_id": str(uuid4()),
+            "userName": flood_info.userName,
+            "userId": flood_info.userId,
+            "location": flood_info.location.dict(),
+            "locationName": flood_info.locationName,
+            "status": flood_info.status,
+            "floodLevel": flood_info.floodLevel,
+            "date": flood_info.date,
+            "url": flood_info.url,
+        }
+        print('new_flood_info', new_flood_info)
+        query = insert(flood_information).values(new_flood_info)
+        await db.execute(query)
 
-    query = insert(flood_information).values(new_flood_info)
-    await db.execute(query)
-
-    return FloodInformation(**new_flood_info)
+        return FloodInformation(**new_flood_info)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 async def update_flood_information(db: Database, _id: str, flood_info: FloodInformation):
@@ -74,7 +76,6 @@ async def update_flood_information(db: Database, _id: str, flood_info: FloodInfo
         .returning(flood_information)
     )
 
-    # Execute the query and fetch the updated result
     result = await db.fetch_one(query)
 
     if result is None:

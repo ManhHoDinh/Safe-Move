@@ -24,6 +24,7 @@ class FloodInformation(BaseModel):
     status: EStatus
     floodLevel: int
     userId: str
+    url: str
 
 
 class FloodInformationCreate(BaseModel):
@@ -34,3 +35,4 @@ class FloodInformationCreate(BaseModel):
     status: EStatus
     floodLevel: int
     userId: str
+    url: str
