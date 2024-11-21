@@ -22,9 +22,10 @@ flood_information = APIRouter()
 async def list_flood_information(
     search: Optional[str] = None,
     status: Optional[EStatus] = None,
+    userId: Optional[str] = None,
     db=Depends(get_db)
 ) -> List[FloodInformation]:
-    return await db_manager.get_flood_information(db, search, status)
+    return await db_manager.get_flood_information(db, search, status, userId)
 
 
 @flood_information.post("/", response_model=FloodInformation)

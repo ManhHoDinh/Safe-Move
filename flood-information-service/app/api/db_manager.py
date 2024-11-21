@@ -8,6 +8,7 @@ from fastapi import HTTPException, File, UploadFile, Form
 from supabase import create_client, Client
 import uuid
 import json
+from datetime import datetime
 
 
 SUPABASE_URL = "https://evrsgjzzvkcfhtmntiul.supabase.co"
@@ -49,7 +50,8 @@ async def create_upload_file(file: UploadFile = File(...)):
 async def get_flood_information(
     db: Database,
     search: Optional[str] = None,
-    status: Optional[str] = None
+    status: Optional[str] = None,
+    userId: Optional[str] = None
 ) -> List[FloodInformation]:
     query = select(flood_information)
 
@@ -64,16 +66,25 @@ async def get_flood_information(
             )
         )
 
-    # Add status condition if it exists
     if status:
-        conditions.append(cast(flood_information.c.status,
-                          Text).ilike(status))
+        conditions.append(cast(flood_information.c.status, Text).ilike(status))
+
+    if userId:
+        conditions.append(flood_information.c.userId == userId)
 
     if conditions:
         query = query.where(and_(*conditions))
 
     results = await db.fetch_all(query)
-    return [FloodInformation(**result) for result in results]
+    processed_results = []
+
+    for result in results:
+        result_dict = dict(result)
+        if result_dict.get("date") is None:
+            result_dict["date"] = datetime.utcnow()
+        processed_results.append(result_dict)
+
+    return [FloodInformation(**result) for result in processed_results]
 
 
 async def create_flood_information(db: Database, flood_info: str, file: UploadFile = File(...)):
@@ -92,6 +103,7 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
             "status": flood_info_model.status,
             "floodLevel": flood_info_model.floodLevel,
             "url": file_url,
+            "date": datetime.utcnow()
         }
         query = insert(flood_information).values(new_flood_info)
         await db.execute(query)
