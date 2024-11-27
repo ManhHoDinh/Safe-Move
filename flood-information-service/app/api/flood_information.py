@@ -8,7 +8,6 @@ from app.api.db import get_db
 from supabase import create_client, Client
 import uuid
 
-
 SUPABASE_URL = "https://evrsgjzzvkcfhtmntiul.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2cnNnanp6dmtjZmh0bW50aXVsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMTk4MTg0NSwiZXhwIjoyMDQ3NTU3ODQ1fQ.AS6I-5rlQGzgbOazdegBFBB_yU68l7odtIcd0_TAr3w"
 SUPABASE_BUCKET = "flood-image"
