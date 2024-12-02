@@ -11,6 +11,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from uuid import uuid4
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, From, To, TemplateId, Substitution
 
 camera_status = {}
 
@@ -155,3 +157,98 @@ async def unfollow_camera_service(db: Database, _id: str):
         )
 
     return {"message": "Follow camera deleted successfully"}
+
+
+async def update_flood_status(db: Database, camera_id: str, is_flood: bool):
+    # Fetch the camera's current flood status
+    camera_query = await db.fetch_one(
+        select([cameras]).where(cameras.c._id == camera_id)
+    )
+
+    # Check if the camera exists
+    if camera_query is None:
+        raise HTTPException(status_code=404, detail="Camera does not exist")
+
+    # Extract the current flood status of the camera
+    current_flood_status = camera_query.get(
+        "is_flood")  # Adjust based on your column name
+
+    # Compare the current flood status with the new `is_flood` parameter
+    if current_flood_status == is_flood:
+        return {
+            "message": "No update needed. The flood status is already up-to-date.",
+            "current_status": current_flood_status
+        }
+
+    # Update the flood status in the database
+    update_query = (
+        update(cameras)
+        .where(cameras.c._id == camera_id)
+        .values(is_flood=is_flood)
+    )
+    await db.execute(update_query)
+
+    return {
+        "message": "Flood status updated successfully.",
+        "previous_status": current_flood_status,
+        "new_status": is_flood
+    }
+
+
+async def send_email(camera_id: str, db: Database):
+    try:
+        camera_query = await db.fetch_all(
+            select([follow_camera]).where(
+                follow_camera.c.cameraId == camera_id)
+        )
+
+        if camera_query is None:
+            raise HTTPException(
+                status_code=404, detail="No matching rows found for the given camera ID")
+
+        # Extract all userEmail addresses from the matching rows
+        user_emails = [row["userEmail"]
+                       for row in camera_query if "userEmail" in row]
+
+        if user_emails is None:
+            raise HTTPException(
+                status_code=400, detail="No userEmail addresses found for the given camera ID")
+
+        # Log the matching rows and emails
+        print(f"Matching rows: {camera_query}")
+        print(f"Emails to send: {user_emails}")
+
+        # Send email to all userEmail addresses
+        message = Mail(
+            from_email=From('y.levan@ncc.asia', 'Save Move Support'),
+            to_emails=[To(email) for email in user_emails],
+        )
+
+        message.template_id = 'd-764126dba9db453da61ce904a3afb5b6'
+
+        # Dynamic template data (adjust as per your SendGrid template)
+        message.dynamic_template_data = {
+            "camera_id": camera_id,
+            "message": "This is a notification about the camera you are following.",
+        }
+
+        # SendGrid API client
+        # Replace with your actual API key
+        sg = SendGridAPIClient(
+            'SECRECT')
+        response = sg.send(message)
+
+        # Log the email response
+        print(response.status_code)  # Should print 202 for success
+        print(response.body)
+        print(response.headers)
+
+        return {
+            "message": "Emails sent successfully",
+            "email_count": len(user_emails),
+            "emails": user_emails,
+        }
+
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send emails")

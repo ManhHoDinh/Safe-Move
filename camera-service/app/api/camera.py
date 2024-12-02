@@ -6,6 +6,9 @@ from app.api.db_manager import DBManager
 from sqlalchemy.orm import Session
 from app.api.db import get_db
 from databases import Database
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, From, To, TemplateId, Substitution
+from sqlalchemy import select
 
 cameras = APIRouter()
 
@@ -71,3 +74,8 @@ async def unfollow_camera(_id: str, db=Depends(get_db)):
         raise HTTPException(
             status_code=404, detail="Follow camera not found")
     return {"message": "Follow camera deleted successfully"}
+
+
+@cameras.post("/cameras/send-email/{_id}")
+async def send_email(_id: str, db=Depends(get_db)):
+    await db_manager.send_email(_id, db)
