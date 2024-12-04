@@ -21,6 +21,7 @@ SUPABASE_BUCKET = "flood-image"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+
 async def create_flood_point(point: FloodPointCreate):
     flood_db = get_flood_point_db()
     db_point = {
@@ -33,6 +34,7 @@ async def create_flood_point(point: FloodPointCreate):
     query = insert(flood_point_table).values(db_point)
 
     return await flood_db.execute(query=query)
+
 
 async def create_upload_file(file: UploadFile = File(...)):
     try:
@@ -108,7 +110,7 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
         flood_info_data = json.loads(flood_info)
         flood_info_model = FloodInformationCreate(**flood_info_data)
         flood_level = random.randint(0, 5)
-                
+
         upload_response = await create_upload_file(file)
         file_url = upload_response["file_url"]
         flood_point = FloodPointCreate(
@@ -138,11 +140,11 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
             "url": file_url,
             "date": datetime.utcnow()
         }
-       
+
         query = insert(flood_information).values(new_flood_info)
-        
+
         await db.execute(query)
-        
+
         return FloodInformation(**new_flood_info)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -155,15 +157,19 @@ async def update_flood_information(db: Database, _id: str, flood_info: FloodInfo
         .values(
             userName=flood_info.userName,
             userId=flood_info.userId,
-            location=flood_info.location.dict(),
+            latitude=flood_info.latitude,
+            longitude=flood_info.longitude,
             locationName=flood_info.locationName,
             status=flood_info.status,
+            message=flood_info.message,
+            modelDetectFloodLevel=flood_info.modelDetectFloodLevel,
+            url=flood_info.url,
             floodLevel=flood_info.floodLevel,
             date=flood_info.date
         )
         .returning(flood_information)
     )
-    
+
     result = await db.fetch_one(query)
 
     if result is None:
@@ -179,7 +185,7 @@ async def update_flood_information(db: Database, _id: str, flood_info: FloodInfo
             expiration_time=flood_info.date
         )
         await create_flood_point(flood_point)
-    
+
     return FloodInformation(**result)
 
 

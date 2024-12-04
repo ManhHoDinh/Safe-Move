@@ -28,6 +28,14 @@ async def list_cameras(
     return await db_manager.get_camera_list(db, is_enabled, search)
 
 
+@cameras.get("/follow/camera/{user_id}")
+async def get_follow_camera(userId: str, db=Depends(get_db)):
+    camera = await db_manager.get_follow_camera(db, userId)
+    if not camera:
+        raise HTTPException(status_code=404, detail="Follow camera not found")
+    return camera
+
+
 @cameras.get("/cameras/{camera_id}")
 async def read_camera(camera_id: str, db=Depends(get_db)):
     camera = await db_manager.get_camera_by_id(db, camera_id)
@@ -67,9 +75,9 @@ async def follow_camera(
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@cameras.delete("/cameras/follow/{_id}")
-async def unfollow_camera(_id: str, db=Depends(get_db)):
-    deleted = await db_manager.unfollow_camera_service(db, _id)
+@cameras.delete("/cameras/follow")
+async def unfollow_camera(cameraId: str, userId: str, db=Depends(get_db)):
+    deleted = await db_manager.unfollow_camera_service(db, cameraId, userId)
     if not deleted:
         raise HTTPException(
             status_code=404, detail="Follow camera not found")
