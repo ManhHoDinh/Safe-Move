@@ -175,11 +175,11 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
             "url": file_url,
             "date": datetime.utcnow()
         }
-       
+
         query = insert(flood_information).values(new_flood_info)
-        
+
         await db.execute(query)
-        
+
         return FloodInformation(**new_flood_info)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -196,12 +196,15 @@ async def update_flood_information(db: Database, _id: str, flood_info: FloodInfo
             longitude=flood_info.longitude,
             locationName=flood_info.locationName,
             status=flood_info.status,
+            message=flood_info.message,
+            modelDetectFloodLevel=flood_info.modelDetectFloodLevel,
+            url=flood_info.url,
             floodLevel=flood_info.floodLevel,
             date=flood_info.date
         )
         .returning(flood_information)
     )
-    
+
     result = await db.fetch_one(query)
 
     if result is None:
