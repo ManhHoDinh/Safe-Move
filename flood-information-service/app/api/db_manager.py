@@ -12,27 +12,63 @@ import uuid
 import json
 from datetime import datetime
 from app.api.flood_point_db import flood_point_table, FloodPointCreate, get_flood_point_db
-from sqlalchemy.orm import Session
-
-
+import httpx
 SUPABASE_URL = "https://evrsgjzzvkcfhtmntiul.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2cnNnanp6dmtjZmh0bW50aXVsIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTczMTk4MTg0NSwiZXhwIjoyMDQ3NTU3ODQ1fQ.AS6I-5rlQGzgbOazdegBFBB_yU68l7odtIcd0_TAr3w"
 SUPABASE_BUCKET = "flood-image"
+from PIL import Image
+from io import BytesIO
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+async def create_or_update_flood_point(point: FloodPointCreate):
+    flood_db = get_flood_point_db()  # Kết nối cơ sở dữ liệu
+    print(f"point: {point}")
+    # Tìm điểm hiện có
+    existing_query = flood_point_table.select().where(
+        (flood_point_table.c.latitude == point.latitude) &
+        (flood_point_table.c.longitude == point.longitude)
+    )
 
-async def create_flood_point(point: FloodPointCreate):
-    flood_db = get_flood_point_db()
-    db_point = {
-        "name": point.name,
-        "latitude": point.latitude,
-        "longitude": point.longitude,
-        "flood_level": point.flood_level,
-        "expiration_time": point.expiration_time
-    }
-    query = insert(flood_point_table).values(db_point)
+    existing_point = await flood_db.fetch_one(existing_query)
 
-    return await flood_db.execute(query=query)
+    # Nếu tồn tại, cập nhật
+    if existing_point:
+        update_query = (
+            flood_point_table.update()
+            .where(
+                (flood_point_table.c.latitude == point.latitude) &
+                (flood_point_table.c.longitude == point.longitude)
+            )
+            .values(
+                name=point.name,
+                flood_level=int(point.flood_level),
+                expiration_time=point.expiration_time,
+            )
+        )
+        await flood_db.execute(update_query)
+    else:
+        # Nếu không tồn tại, thêm mới
+        insert_query = flood_point_table.insert().values(
+            name=point.name,
+            latitude=point.latitude,
+            longitude=point.longitude,
+            flood_level=int(point.flood_level),
+            expiration_time=point.expiration_time,
+        )
+        await flood_db.execute(insert_query)
+
+async def call_flood_detection_api(file: UploadFile  = File(...)):
+    url = 'https://flooded-traffic-ai-api-new.onrender.com/predict/'
+    headers = {'accept': 'application/json'}
+    files = {'file': (file.filename, file.file, file.content_type)}
+
+
+    async with httpx.AsyncClient() as client:
+        response = await client.post(url, headers=headers, files=files)
+        if response.status_code == 200:
+            return response.json()  # Assuming the response contains flood data
+        else:
+            raise Exception(f"Failed to get flood status: {response.status_code}, {response.text}")
 
 async def create_upload_file(file: UploadFile = File(...)):
     try:
@@ -107,8 +143,9 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
     try:
         flood_info_data = json.loads(flood_info)
         flood_info_model = FloodInformationCreate(**flood_info_data)
-        flood_level = random.randint(0, 5)
-                
+        floodStatus = await call_flood_detection_api(file)
+        flood_level = 0 if floodStatus['prediction'] == 'Normal' else 1
+        
         upload_response = await create_upload_file(file)
         file_url = upload_response["file_url"]
         flood_point = FloodPointCreate(
@@ -118,11 +155,11 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
             flood_level=flood_level,
             expiration_time=datetime.utcnow()
         )
+        
         status = EStatus.PENDING
-        # if flood_info_model.floodLevel == flood_level:
-        if True:
+        if floodStatus['prediction'] == 'Flooding':
             print("Flood level is the same as model detect flood level")
-            print(await create_flood_point(flood_point))
+            print(await create_or_update_flood_point(flood_point))
             status = EStatus.APPROVED
         new_flood_info = {
             "_id": str(uuid4()),
@@ -132,7 +169,7 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
             "longitude": flood_info_model.longitude,
             "locationName": flood_info_model.locationName,
             "status": status,
-            "floodLevel": flood_info_model.floodLevel,
+            "floodLevel": 1,
             "message": flood_info_model.message,
             "modelDetectFloodLevel": flood_level,
             "url": file_url,
@@ -155,7 +192,8 @@ async def update_flood_information(db: Database, _id: str, flood_info: FloodInfo
         .values(
             userName=flood_info.userName,
             userId=flood_info.userId,
-            location=flood_info.location.dict(),
+            latitude=flood_info.latitude,
+            longitude=flood_info.longitude,
             locationName=flood_info.locationName,
             status=flood_info.status,
             floodLevel=flood_info.floodLevel,
@@ -178,7 +216,7 @@ async def update_flood_information(db: Database, _id: str, flood_info: FloodInfo
             flood_level=flood_info.floodLevel,
             expiration_time=flood_info.date
         )
-        await create_flood_point(flood_point)
+        await create_or_update_flood_point(flood_point)
     
     return FloodInformation(**result)
 

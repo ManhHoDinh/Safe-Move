@@ -6,3 +6,5 @@ uvicorn
 supabase
 psycopg2
 python-multipart
+httpx
+Pillow

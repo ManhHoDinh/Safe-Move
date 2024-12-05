@@ -7,7 +7,7 @@ from app.api.flood_point_db import FloodPointMetadata, FloodPointDatabase, Flood
 metadata.create_all(engine)
 FloodPointMetadata.create_all(FloodPointEngine)
 app = FastAPI(openapi_url="/api/v1/flood-information/openapi.json",
-              docs_url="/api/v1/flood-information/docs")
+              docs_url="/docs")
 
 app.add_middleware(
     CORSMiddleware,
@@ -30,5 +30,5 @@ async def shutdown():
     await FloodPointDatabase.disconnect()
 
 
-app.include_router(flood_information, prefix='/api/v1/flood-information',
+app.include_router(flood_information, prefix='/flood-information',
                    tags=['flood-information'])

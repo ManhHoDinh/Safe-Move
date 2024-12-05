@@ -92,20 +92,19 @@ async def update_flood_points():
                 latitude = camera["loc"]["coordinates"][1]
                 longitude = camera["loc"]["coordinates"][0]
                 name = camera["name"]
+                url = f"http://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id={camera['_id']}"
+                input_image = await get_image_and_detect(url)
+                flood_level = int(await predict(input_image))
+                print(f"Camera {i}: {name} - Latitude: {latitude}, Longitude: {longitude}, Flood level: {flood_level}")
+                
                 existing_point = db.query(models.FloodPoint).filter(
                     models.FloodPoint.latitude == latitude,
                     models.FloodPoint.longitude == longitude
                 ).first()
                 
                 # Thiết lập expiration_time là thời gian hiện tại + 5 phút
-                expiration_time = datetime.now() + timedelta(minutes=5)
+                expiration_time = datetime.now() + timedelta(minutes=15)
                 
-                # Random flood_level từ 0 đến 5
-                url = f"http://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id={camera['_id']}"
-                input_image = await get_image_and_detect(url)
-                flood_level = int(await predict(input_image))
-                print(f"Camera {i}: {name} - Latitude: {latitude}, Longitude: {longitude}, Flood level: {flood_level}")
-                # Cập nhật nếu điểm đã tồn tại, thêm mới nếu không tồn tại
                 if existing_point:
                     existing_point.name = name
                     existing_point.expiration_time = expiration_time

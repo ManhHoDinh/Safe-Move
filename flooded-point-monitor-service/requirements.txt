@@ -1,7 +1,6 @@
 asyncpg
 sqlalchemy
 databases[postgresql]==0.2.6
-ultralytics==8.0.42
 uvicorn[standard]==0.20.0
 gunicorn==20.1.0
 fastapi[all]==0.89.1
