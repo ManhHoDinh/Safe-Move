@@ -18,6 +18,8 @@ SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 SUPABASE_BUCKET = "flood-image"
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+
 async def create_or_update_flood_point(point: FloodPointCreate):
     flood_db = get_flood_point_db()  # Kết nối cơ sở dữ liệu
     # Tìm điểm hiện có
@@ -53,18 +55,20 @@ async def create_or_update_flood_point(point: FloodPointCreate):
         )
         await flood_db.execute(insert_query)
 
-async def call_flood_detection_api(file: UploadFile  = File(...)):
+
+async def call_flood_detection_api(file: UploadFile = File(...)):
     url = 'https://flooded-traffic-ai-api-new.onrender.com/predict/'
     headers = {'accept': 'application/json'}
     files = {'file': (file.filename, file.file, file.content_type)}
-
 
     async with httpx.AsyncClient() as client:
         response = await client.post(url, headers=headers, files=files)
         if response.status_code == 200:
             return response.json()  # Assuming the response contains flood data
-        else:
-            raise Exception(f"Failed to get flood status: {response.status_code}, {response.text}")
+        # else:
+        #     raise Exception(f"Failed to get flood status: {
+        #                     response.status_code}, {response.text}")
+
 
 async def create_upload_file(file: UploadFile = File(...)):
     try:
@@ -99,6 +103,7 @@ async def create_upload_file(file: UploadFile = File(...)):
             status_code=500,
             detail=f"An error occurred: {str(e)}"
         )
+
 
 async def get_flood_information(
     db: Database,
@@ -140,17 +145,14 @@ async def get_flood_information(
     return [FloodInformation(**result) for result in processed_results]
 
 
-async def create_flood_information(db: Database, flood_info: str, file: UploadFile = File(...)): 
+async def create_flood_information(db: Database, flood_info: str, file: UploadFile = File(...)):
     try:
+        upload_response = await create_upload_file(file)
         flood_info_data = json.loads(flood_info)
         flood_info_model = FloodInformationCreate(**flood_info_data)
         floodStatus = await call_flood_detection_api(file)
         flood_level = 0 if floodStatus['prediction'] == 'Normal' else 1
-        print(floodStatus)
-        print(flood_level)
-        upload_response = await create_upload_file(file)
-        
-        print(flood_level)
+
         file_url = upload_response["file_url"]
         flood_point = FloodPointCreate(
             name=flood_info_model.locationName,
@@ -159,11 +161,9 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
             flood_level=flood_level,
             expiration_time=datetime.utcnow()
         )
-        
+
         status = EStatus.PENDING
         if floodStatus['prediction'] == 'Flooding':
-            print("Flood level is the same as model detect flood level")
-            print(await create_or_update_flood_point(flood_point))
             status = EStatus.APPROVED
         new_flood_info = {
             "_id": str(uuid4()),
@@ -224,7 +224,7 @@ async def update_flood_information(db: Database, _id: str, flood_info: FloodInfo
             expiration_time=flood_info.date
         )
         await create_or_update_flood_point(flood_point)
-    
+
     return FloodInformation(**result)
 
 
