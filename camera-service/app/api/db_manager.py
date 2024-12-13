@@ -124,6 +124,10 @@ async def get_follow_camera(
 
     return [result["cameraId"] for result in results]
 
+async def get_follows(db: Database):
+    query = follow_camera.select()
+    return await db.fetch_all(query=query)
+
 
 async def follow_camera_service(db: Database, request: FollowRequest):
     camera_query = await db.fetch_one(
@@ -213,12 +217,12 @@ async def send_email(camera_id: str, db: Database):
                 '%Y-%m-%d %H:%M:%S')
 
         sg = SendGridAPIClient(
-            'KEY_SENDGRID'
+            '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'
         )
 
         # Send the email to the user
         message = Mail(
-            from_email=From('y.levan@ncc.asia', 'Save Move Support'),
+            from_email=From('y.levan@ncc.asia', 'Safe Move Support'),
             to_emails=To(user_email),
         )
         message.template_id = 'd-764126dba9db453da61ce904a3afb5b6'

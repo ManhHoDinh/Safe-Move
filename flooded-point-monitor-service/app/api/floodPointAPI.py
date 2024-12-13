@@ -17,7 +17,7 @@ from loguru import logger
 import httpx
 from PIL import Image
 # URL của API
-EXTERNAL_API_URL = "https://camera-service.onrender.com/api/v1/cameras/cameras?is_enabled=true"
+EXTERNAL_API_URL = "https://camera-service.onrender.com/cameras?is_enabled=true"
 
 # Headers cho request
 HEADERS = {
@@ -79,6 +79,23 @@ async def get_image_and_detect(url):
         logger.error("Error in fetching or detecting image: {}", e)
         return None
 
+NOTIFICATION_ENDPOINT = "https://camera-service.onrender.com/cameras/send-email/"
+async def send_notification(cameraId:str):
+    """Send a notification to the user."""
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.post(
+                NOTIFICATION_ENDPOINT + cameraId,
+                headers={"accept": "application/json"},
+                data=""
+            )
+            response.raise_for_status()
+            logger.info("Notification sent successfully.")
+        except httpx.HTTPError as http_err:
+            logger.error(f"HTTP error occurred while sending notification: {http_err}")
+        except Exception as err:
+            logger.error(f"An error occurred while sending notification: {err}")
+
 async def update_flood_points():
     db = next(get_db())  # Lấy kết nối DB
     delete_expired_flood_points(db)  # Xóa các điểm đã hết hạn
@@ -96,7 +113,9 @@ async def update_flood_points():
                 input_image = await get_image_and_detect(url)
                 flood_level = int(await predict(input_image))
                 print(f"Camera {i}: {name} - Latitude: {latitude}, Longitude: {longitude}, Flood level: {flood_level}")
-                
+                if flood_level == 1:
+                    send_notification(camera["_id"])
+                    
                 existing_point = db.query(models.FloodPoint).filter(
                     models.FloodPoint.latitude == latitude,
                     models.FloodPoint.longitude == longitude

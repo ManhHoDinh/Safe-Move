@@ -27,13 +27,18 @@ async def list_cameras(
 ) -> List[Camera]:
     return await db_manager.get_camera_list(db, is_enabled, search)
 
+@cameras.get("/follows", response_model=List[FollowRequest])
+async def list_follows(
+    db=Depends(get_db)
+) -> List[FollowRequest]:
+    return await db_manager.get_follows(db)
 
-@cameras.get("/follow/camera/{user_id}")
+@cameras.get("/follow/{user_id}")
 async def get_follow_camera(userId: str, db=Depends(get_db)):
-    camera = await db_manager.get_follow_camera(db, userId)
-    if not camera:
+    follow = await db_manager.get_follow_camera(db, userId)
+    if not follow:
         raise HTTPException(status_code=404, detail="Follow camera not found")
-    return camera
+    return follow
 
 
 @cameras.get("/cameras/{camera_id}")
