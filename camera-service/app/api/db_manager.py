@@ -217,7 +217,7 @@ async def send_email(camera_id: str, db: Database):
                 '%Y-%m-%d %H:%M:%S')
 
         sg = SendGridAPIClient(
-            ''
+            'API_KEY'
         )
 
         # Send the email to the user
