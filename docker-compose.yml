@@ -26,6 +26,13 @@ services:
       - ./notification-service/:/app/
     ports:
       - 8004:8000
+  detect_information_service:
+    build: ./detect-information-service
+    command: uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+    volumes:
+      - ./detect-information-service/:/app/
+    ports:
+      - 8005:8000
 
   nginx:
     image: nginx:latest
@@ -37,6 +44,7 @@ services:
       - camera_service
       - flood_information_service
       - notifications_service
+      - detect_information_service
 
 volumes:
   postgres_data_movie:

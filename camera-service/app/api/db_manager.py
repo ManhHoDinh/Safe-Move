@@ -12,16 +12,13 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException
 from uuid import uuid4
 from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail, From, To, TemplateId, Substitution
-
+from sendgrid.helpers.mail import Mail, From, To
 camera_status = {}
-
 
 def truncate_string(value: str, max_length: int = 50) -> str:
     if isinstance(value, str) and len(value) > max_length:
         return value[:max_length]
     return value
-
 
 class DBManager:
     def __init__(self, session: get_db):
@@ -34,13 +31,10 @@ async def fetch_cameras_from_api() -> List[Dict]:
         data = response.json()
         return data
 
-
-
 async def get_camera_by_id(db: Database, camera_id: str) -> dict:
     query = select([cameras]).where(cameras.c._id == camera_id)
     result = await db.fetch_one(query)
     return result
-
 
 async def update_camera_statuses(db: Database, camera_ids: List[str], is_enabled: bool) -> List[dict]:
     updated_cameras = []
@@ -89,7 +83,6 @@ async def update_camera_statuses(db: Database, camera_ids: List[str], is_enabled
 
     return updated_cameras
 
-
 async def get_camera_list(
     db: Database,
     is_enabled: Optional[bool] = None,
@@ -118,7 +111,6 @@ async def get_camera_list(
             or search_pattern in camera['id']
             or search_pattern in camera['dist']]
     return [Camera(**camera) for camera in api_data]
-
 
 async def get_follow_camera(
     db: Database,
@@ -184,7 +176,6 @@ async def unfollow_camera_service(db: Database, cameraId: str, userId: str):
         )
 
     return {"message": "Follow camera deleted successfully"}
-
 
 async def send_email(camera_id: str, db: Database):
     try:
