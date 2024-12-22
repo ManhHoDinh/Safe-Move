@@ -29,7 +29,7 @@ async def list_flood_information(
 
 @flood_information.post("/", response_model=FloodInformation)
 async def create_flood_info(
-    flood_info: str, file: UploadFile = File(...), db=Depends(get_db)
+    flood_info: str = Form(...), file: UploadFile = File(...), db=Depends(get_db)
 ):
     try:
         new_flood_info = await db_manager.create_flood_information(db, flood_info, file)
