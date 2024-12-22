@@ -101,6 +101,7 @@ async def update_flood_points():
     delete_expired_flood_points(db)  # Xóa các điểm đã hết hạn
     try:
         response = requests.get(EXTERNAL_API_URL)
+        print("Response: ", response)
         if response.status_code == 200:
             cameras = response.json()  # Giả định API trả về danh sách JSON
             i = 0

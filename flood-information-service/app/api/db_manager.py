@@ -27,6 +27,8 @@ async def create_or_update_flood_point(point: FloodPointCreate):
     )
 
     existing_point = await flood_db.fetch_one(existing_query)
+    print(f"existing_point: {existing_point}")
+    print(f"point: {point}")
     # Nếu tồn tại, cập nhật
     if existing_point:
         update_query = (
@@ -41,6 +43,7 @@ async def create_or_update_flood_point(point: FloodPointCreate):
                 expiration_time=point.expiration_time,
             )
         )
+        print(f"update_query: {update_query}")
         await flood_db.execute(update_query)
     else:
         # Nếu không tồn tại, thêm mới
@@ -51,7 +54,10 @@ async def create_or_update_flood_point(point: FloodPointCreate):
             flood_level=int(point.flood_level),
             expiration_time=point.expiration_time,
         )
+        print(f"insert_query: {insert_query}")
+    
         await flood_db.execute(insert_query)
+        return FloodPointCreate(**fl)
 
 async def call_flood_detection_api(file: UploadFile  = File(...)):
     url = 'https://flooded-traffic-ai-api-new.onrender.com/predict/'
