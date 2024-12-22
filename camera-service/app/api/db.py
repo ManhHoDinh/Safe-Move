@@ -11,7 +11,7 @@ engine = create_engine(DATABASE_URI)
 metadata = MetaData()
 
 cameras = Table(
-    'cameras',
+    'cameras_db',
     metadata,
     Column('_id', String, primary_key=True),
     Column('id', String, unique=True, nullable=False),

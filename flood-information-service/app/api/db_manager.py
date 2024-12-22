@@ -59,7 +59,7 @@ async def create_or_update_flood_point(point: FloodPointCreate):
         print(f"insert_query: {insert_query}")
     
         await flood_db.execute(insert_query)
-        return FloodPointCreate(**fl)
+        
 
 
 async def call_flood_detection_api(file: UploadFile = File(...)):
@@ -170,6 +170,8 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
 
         status = EStatus.PENDING
         if floodStatus['prediction'] == 'Flooding':
+            print("Flood level is the same as model detect flood level")
+            await create_or_update_flood_point(flood_point)
             status = EStatus.APPROVED
         new_flood_info = {
             "_id": str(uuid4()),

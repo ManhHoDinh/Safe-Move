@@ -11,14 +11,6 @@ from sendgrid.helpers.mail import Mail, From, To, TemplateId, Substitution
 from sqlalchemy import select
 
 cameras = APIRouter()
-
-
-@cameras.get("/", response_model=List[Camera])
-async def get_all_cameras(db: Session = Depends(get_db)):
-    db_manager = DBManager(db)
-    return await db_manager.fetch_cameras()
-
-
 @cameras.get("/cameras", response_model=List[Camera])
 async def list_cameras(
     is_enabled: Optional[bool] = None,
