@@ -49,8 +49,6 @@ async def update_camera_statuses(db: Database, camera_ids: List[str], is_enabled
     for camera in updated_cameras:
         stmt = select([cameras]).where(cameras.c.id == camera.id)
         result = await db.fetch_one(stmt)
-        print(result)
-        print(camera)
         if is_enabled:
             if result is None:
                 new_camera_data = {
@@ -62,11 +60,10 @@ async def update_camera_statuses(db: Database, camera_ids: List[str], is_enabled
                     'dist': truncate_string(camera.dist),
                     'ptz': camera.ptz,
                     'angle': camera.angle,
-                    'liveviewUrl': truncate_string(camera.liveviewUrl),
+                    'liveviewUrl': 'http://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id={camera.camera_id}',
                     'isEnabled': False,
                     'lastmodified':  datetime.utcnow()
                 }
-                print(new_camera_data)
                 stmt = insert(cameras).values(new_camera_data)
                 try:
                     await db.execute(stmt)
@@ -156,7 +153,6 @@ async def follow_camera_service(db: Database, request: FollowRequest):
     await db.execute(insert_query)
 
     return follow_entry
-
 
 async def unfollow_camera_service(db: Database, cameraId: str, userId: str):
     print(cameraId)

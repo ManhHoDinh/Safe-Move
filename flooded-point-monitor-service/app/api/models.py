@@ -3,7 +3,7 @@ from datetime import datetime
 from .database import Base
 
 class FloodPoint(Base):
-    __tablename__ = 'flood_points'
+    __tablename__ = 'flood_points_dbb'
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, index=True)
@@ -11,3 +11,4 @@ class FloodPoint(Base):
     longitude = Column(Float, nullable=False)
     flood_level = Column(Integer, nullable=False)
     expiration_time = Column(DateTime, default=datetime.utcnow)
+    flood_information_id = Column(String, nullable=True)

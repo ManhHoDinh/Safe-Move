@@ -43,6 +43,7 @@ async def create_or_update_flood_point(point: FloodPointCreate):
                 name=point.name,
                 flood_level=int(point.flood_level),
                 expiration_time=point.expiration_time,
+                flood_information_id=point.flood_information_id
             )
         )
         print(f"update_query: {update_query}")
@@ -55,6 +56,7 @@ async def create_or_update_flood_point(point: FloodPointCreate):
             longitude=point.longitude,
             flood_level=int(point.flood_level),
             expiration_time=point.expiration_time,
+            flood_information_id=point.flood_information_id
         )
         print(f"insert_query: {insert_query}")
     
@@ -160,19 +162,6 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
         flood_level = 0 if floodStatus['prediction'] == 'Normal' else 1
 
         file_url = upload_response["file_url"]
-        flood_point = FloodPointCreate(
-            name=flood_info_model.locationName,
-            latitude=flood_info_model.latitude,
-            longitude=flood_info_model.longitude,
-            flood_level=flood_level,
-            expiration_time=datetime.utcnow()
-        )
-
-        status = EStatus.PENDING
-        if floodStatus['prediction'] == 'Flooding':
-            print("Flood level is the same as model detect flood level")
-            await create_or_update_flood_point(flood_point)
-            status = EStatus.APPROVED
         new_flood_info = {
             "_id": str(uuid4()),
             "userName": flood_info_model.userName,
@@ -180,18 +169,25 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
             "latitude": flood_info_model.latitude,
             "longitude": flood_info_model.longitude,
             "locationName": flood_info_model.locationName,
-            "status": status,
+            "status": EStatus.PENDING if floodStatus['prediction'] == 'Normal' else EStatus.APPROVED,
             "floodLevel": 1,
             "message": flood_info_model.message,
             "modelDetectFloodLevel": flood_level,
             "url": file_url,
             "date": datetime.utcnow()
         }
-        print(new_flood_info)
         query = insert(flood_information).values(new_flood_info)
-
         await db.execute(query)
-
+        flood_point = FloodPointCreate(
+            name=flood_info_model.locationName,
+            latitude=flood_info_model.latitude,
+            longitude=flood_info_model.longitude,
+            flood_level=flood_level,
+            expiration_time=datetime.utcnow(),
+            flood_information_id=new_flood_info["_id"]
+        )
+        if floodStatus['prediction'] == 'Flooding':
+            await create_or_update_flood_point(flood_point)
         return FloodInformation(**new_flood_info)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -229,7 +225,8 @@ async def update_flood_information(db: Database, _id: str, flood_info: FloodInfo
             latitude=flood_info.latitude,
             longitude=flood_info.longitude,
             flood_level=flood_info.floodLevel,
-            expiration_time=flood_info.date
+            expiration_time=flood_info.date,
+            flood_information_id=_id
         )
         await create_or_update_flood_point(flood_point)
 

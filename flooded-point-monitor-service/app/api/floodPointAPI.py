@@ -16,6 +16,7 @@ import io
 from loguru import logger
 import httpx
 from PIL import Image
+from app.api.detectAPI import create_or_update_detection, DetectionCreate
 # URL của API
 EXTERNAL_API_URL = "https://camera-service.onrender.com/cameras?is_enabled=true"
 
@@ -97,6 +98,7 @@ async def send_notification(cameraId:str):
             logger.error(f"An error occurred while sending notification: {err}")
 
 async def update_flood_points():
+
     db = next(get_db())  # Lấy kết nối DB
     delete_expired_flood_points(db)  # Xóa các điểm đã hết hạn
     try:
@@ -114,31 +116,35 @@ async def update_flood_points():
                 input_image = await get_image_and_detect(url)
                 flood_level = int(await predict(input_image))
                 print(f"Camera {i}: {name} - Latitude: {latitude}, Longitude: {longitude}, Flood level: {flood_level}")
+                detect = DetectionCreate(result= "Flooding" if flood_level == 0 else "Normal", camera_id=camera["_id"])
+                await create_or_update_detection(detect)
                 if flood_level == 1:
                     send_notification(camera["_id"])
                     
-                existing_point = db.query(models.FloodPoint).filter(
-                    models.FloodPoint.latitude == latitude,
-                    models.FloodPoint.longitude == longitude
-                ).first()
-                
-                # Thiết lập expiration_time là thời gian hiện tại + 5 phút
-                expiration_time = datetime.now() + timedelta(minutes=15)
-                
-                if existing_point:
-                    existing_point.name = name
-                    existing_point.expiration_time = expiration_time
-                    existing_point.flood_level = int(flood_level)
-                else:
-                    new_point = models.FloodPoint(
-                        name=name,
-                        latitude=latitude,
-                        longitude=longitude,
-                        expiration_time=expiration_time,
-                        flood_level=flood_level
-                    )
-                    db.add(new_point)
-            db.commit()
+                    existing_point = db.query(models.FloodPoint).filter(
+                        models.FloodPoint.latitude == latitude,
+                        models.FloodPoint.longitude == longitude
+                    ).first()
+                    
+                    # Thiết lập expiration_time là thời gian hiện tại + 5 phút
+                    expiration_time = datetime.now() + timedelta(minutes=15)
+                    
+                    if existing_point:
+                        existing_point.name = name
+                        existing_point.expiration_time = expiration_time
+                        existing_point.flood_level = int(flood_level)
+                        db.commit()
+                        db.refresh(existing_point)
+                    else:
+                        new_point = models.FloodPoint(
+                            name=name,
+                            latitude=latitude,
+                            longitude=longitude,
+                            expiration_time=expiration_time,
+                            flood_level=flood_level,
+                        )
+                        db.add(new_point)
+                        db.commit()
     except Exception as e:
         print(f"Error updating flood points: {e}")
     finally:

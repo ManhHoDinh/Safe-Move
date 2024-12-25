@@ -25,7 +25,7 @@ router = APIRouter()
 
 @router.get("/flood_points/", response_model=List[schemas.FloodPointResponse])
 def get_all_flood_points(db: Session = Depends(get_db)):
-    flood_points = db.query(models.FloodPoint).filter(models.FloodPoint.expiration_time >= datetime.now()).all()
+    flood_points = db.query(models.FloodPoint).all()
     return flood_points
 
 @router.post("/flood_points/", response_model=schemas.FloodPointResponse)
@@ -35,8 +35,11 @@ def create_flood_point(point: schemas.FloodPointCreate, db: Session = Depends(ge
         latitude=point.latitude,
         longitude=point.longitude,
         flood_level=point.flood_level,
-        expiration_time=point.expiration_time
+        expiration_time=point.expiration_time,
+        flood_information_id=point.flood_information_id
     )
+    
+    print(f"db_point: {db_point}")
     db.add(db_point)
     db.commit()
     db.refresh(db_point)

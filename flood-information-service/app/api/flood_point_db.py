@@ -19,7 +19,7 @@ def get_flood_point_db():
     return FloodPointDatabase
         
 flood_point_table = Table(
-    'flood_points',  # The name of the table
+    'flood_points_dbb',  # The name of the table
     FloodPointMetadata,         # The metadata object
     Column('id', Integer, primary_key=True, index=True),
     Column('name', String(100), index=True, nullable=False),
@@ -27,6 +27,7 @@ flood_point_table = Table(
     Column('longitude', Float, nullable=False),
     Column('flood_level', Integer, nullable=False),
     Column('expiration_time', DateTime, default=datetime.utcnow),
+    Column('flood_information_id', String, nullable=True),
 )
 
 class FloodPointCreate(BaseModel):
@@ -35,6 +36,7 @@ class FloodPointCreate(BaseModel):
     longitude: float
     flood_level: int
     expiration_time: datetime  # Thời gian hết hạn
+    flood_information_id: str = None
 
 class FloodPointResponse(BaseModel):
     id: int
@@ -43,5 +45,6 @@ class FloodPointResponse(BaseModel):
     longitude: float
     flood_level: int
     expiration_time: datetime
+    flood_information_id: str = None
     class Config:
         orm_mode = True
