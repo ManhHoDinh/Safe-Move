@@ -187,11 +187,16 @@ async def create_flood_information(db: Database, flood_info: str, file: UploadFi
             flood_information_id=new_flood_info["_id"]
         )
         if floodStatus['prediction'] == 'Flooding':
-            await create_or_update_flood_point(flood_point)
+            print(await create_or_update_flood_point(flood_point))
         return FloodInformation(**new_flood_info)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
+async def get_flood_information_by_id(db: Database, flood_information_id: str) -> dict:
+    query = select(flood_information).where(flood_information.c._id == flood_information_id)
+    print(query)
+    result = await db.fetch_one(query)
+    return result
 
 async def update_flood_information(db: Database, _id: str, flood_info: FloodInformation):
     query = (

@@ -112,13 +112,13 @@ async def update_flood_points():
                 latitude = camera["loc"]["coordinates"][1]
                 longitude = camera["loc"]["coordinates"][0]
                 name = camera["name"]
-                url = f"http://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id={camera['_id']}"
+                url = camera["liveviewUrl"]
                 input_image = await get_image_and_detect(url)
                 flood_level = int(await predict(input_image))
                 print(f"Camera {i}: {name} - Latitude: {latitude}, Longitude: {longitude}, Flood level: {flood_level}")
                 detect = DetectionCreate(result= "Flooding" if flood_level == 0 else "Normal", camera_id=camera["_id"])
                 await create_or_update_detection(detect)
-                if flood_level == 1:
+                if flood_level == 0:
                     send_notification(camera["_id"])
                     
                     existing_point = db.query(models.FloodPoint).filter(

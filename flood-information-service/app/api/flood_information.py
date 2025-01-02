@@ -26,6 +26,13 @@ async def list_flood_information(
 ) -> List[FloodInformation]:
     return await db_manager.get_flood_information(db, search, status, userId)
 
+@flood_information.get("/{flood_information_id}")
+async def read_flood_information(flood_information_id: str, db=Depends(get_db)):
+    flood_information = await db_manager.get_flood_information_by_id(db, flood_information_id)
+    if not flood_information:
+        raise HTTPException(status_code=404, detail="Camera not found")
+    return flood_information
+
 
 @flood_information.post("/", response_model=FloodInformation)
 async def create_flood_info(

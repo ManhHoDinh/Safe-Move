@@ -2,8 +2,8 @@ from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
 import httpx
-from app.api.db import cameras, get_db, follow_camera
-from app.api.models import CAMERA_API_URL, Camera, FollowRequest, FollowCamera
+from app.api.db import cameras, get_db, follow_camera, demoCameras
+from app.api.models import CAMERA_API_URL, Camera, FollowRequest, FollowCamera, CreateCamera
 from databases import Database
 from pydantic import ValidationError
 from sqlalchemy import insert, or_, select, update, and_, delete
@@ -34,18 +34,60 @@ async def fetch_cameras_from_api() -> List[Dict]:
 async def get_camera_by_id(db: Database, camera_id: str) -> dict:
     query = select([cameras]).where(cameras.c._id == camera_id)
     result = await db.fetch_one(query)
+    if result is None:
+        query = select([demoCameras]).where(demoCameras.c._id == camera_id)
+        result = await db.fetch_one(query)
     return result
+
+async def get_demo_cameras(db: Database) -> List[Camera]:
+    query = select([demoCameras])
+    return await db.fetch_all(query)
+
+async def create_demo_camera(db: Database, camera: CreateCamera) -> Camera:
+    new_camera_data = {
+        '_id': str(uuid4()),
+        'id': camera.id,
+        'name': camera.name,
+        'loc': camera.loc.dict(),
+        'values': camera.values,
+        'dist': camera.dist,
+        'ptz': camera.ptz,
+        'angle': camera.angle,
+        'liveviewUrl': camera.liveviewUrl,
+        'isEnabled': camera.isEnabled,  
+        'lastmodified': datetime.utcnow()
+    }
+    insert_query = demoCameras.insert().values(
+            new_camera_data
+        )
+    print(f"insert_query: {insert_query}")
+
+    await db.execute(insert_query)
+    return new_camera_data
+
+async def update_demo_camera(db: Database,  camera: Camera) -> dict:
+    stmt = update(demoCameras).where(demoCameras.c._id == camera.camera_id).values(camera)
+    try:
+        await db.execute(stmt)
+    except IntegrityError:
+        return None
+    return camera
+
+async def delete_demo_camera(db: Database, camera_id: str) -> dict:
+    query = delete(demoCameras).where(demoCameras.c._id == camera_id)
+    result = await db.execute(query)
+    if result == 0:
+        return None
+    return {'_id': camera_id}
 
 async def update_camera_statuses(db: Database, camera_ids: List[str], is_enabled: bool) -> List[dict]:
     updated_cameras = []
     api_data = await get_camera_list(db)
-    print(camera_ids)
     
     for camera in api_data:
         if camera.camera_id in camera_ids:
             updated_cameras.append(camera)
-    print(updated_cameras)
-        
+     
     for camera in updated_cameras:
         stmt = select([cameras]).where(cameras.c.id == camera.id)
         result = await db.fetch_one(stmt)
@@ -95,8 +137,13 @@ async def get_camera_list(
     for camera in api_data:
         if camera['_id'] in camera_ids_from_db:
             camera['isEnabled'] = True
+            camera['liveviewUrl'] = f"http://giaothong.hochiminhcity.gov.vn/render/ImageHandler.ashx?id={camera['_id']}"
         else:
             camera['isEnabled'] = False
+
+    stmt = select([demoCameras])
+    db_demoCameras = await db.fetch_all(stmt)
+    api_data = [*api_data, *db_demoCameras]
 
     if is_enabled is not None:
         api_data = [camera for camera in api_data if camera['isEnabled'] == is_enabled]

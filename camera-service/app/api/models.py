@@ -24,6 +24,17 @@ class Camera(BaseModel):
     isEnabled: bool
     lastModified: datetime = datetime.utcnow()
 
+class CreateCamera(BaseModel):
+    id: str
+    name: str
+    loc: Location
+    values: Dict[str, str]
+    dist: str
+    ptz: bool
+    angle: Optional[int] = None
+    liveviewUrl: str
+    isEnabled: bool
+    lastModified: datetime = datetime.utcnow()
 
 class CameraStatusUpdate(BaseModel):
     status: str

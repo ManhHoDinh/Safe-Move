@@ -1,6 +1,6 @@
 from typing import List, Dict, Optional
 from fastapi import APIRouter, HTTPException, Depends
-from app.api.models import Camera, FollowRequest, FollowCamera
+from app.api.models import Camera, FollowRequest, FollowCamera, CreateCamera
 from app.api import db_manager
 from app.api.db_manager import DBManager
 from sqlalchemy.orm import Session
@@ -18,6 +18,34 @@ async def list_cameras(
     db=Depends(get_db)
 ) -> List[Camera]:
     return await db_manager.get_camera_list(db, is_enabled, search)
+
+@cameras.get("/demo-cameras", response_model=List[Camera])
+async def list_demo_cameras(
+    db=Depends(get_db)
+) -> List[Camera]:
+    return await db_manager.get_demo_cameras(db)
+
+@cameras.post("/demo-cameras", response_model=Camera)
+async def create_demo_camera(
+    camera: CreateCamera,
+    db=Depends(get_db)
+) -> Camera:
+    return await db_manager.create_demo_camera(db, camera)
+
+
+@cameras.put("/demo-cameras/{camera_id}", response_model=Camera)
+async def update_demo_camera(
+    camera: Camera,
+    db=Depends(get_db)
+) -> Camera:
+    return await db_manager.update_demo_camera(db,  camera)
+
+@cameras.delete("/demo-cameras/{camera_id}")
+async def delete_demo_camera(
+    camera_id: str,
+    db=Depends(get_db)
+):
+    return await db_manager.delete_demo_camera(db, camera_id)
 
 @cameras.get("/follows", response_model=List[FollowRequest])
 async def list_follows(
