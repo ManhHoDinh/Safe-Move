@@ -269,7 +269,7 @@ async def send_email(camera_id: str, db: Database):
             )
 
         sg = SendGridAPIClient(
-            api_key='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'  # Replace with your actual SendGrid API key
+            api_key='api-key'  # Replace with your actual SendGrid API key
         )
 
         async def send_single_email(user_email: str):
