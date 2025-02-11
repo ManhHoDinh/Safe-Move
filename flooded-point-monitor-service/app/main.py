@@ -18,5 +18,5 @@ async def timer_task():
     while True:
         print("Thực hiện nhiệm vụ.")
         await update_flood_points()
-        print("Xử lý xong.")
-        await asyncio.sleep(5)  # Đợi 60 giây trước khi thực hiện nhiệm vụ tiếp theo
+        await asyncio.sleep(5) 
+        print("Xử lý xong.") # Đợi 60 giây trước khi thực hiện nhiệm vụ tiếp theo

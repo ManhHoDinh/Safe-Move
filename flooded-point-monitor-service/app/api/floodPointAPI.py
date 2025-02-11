@@ -17,6 +17,8 @@ from loguru import logger
 import httpx
 from PIL import Image
 from app.api.detectAPI import create_or_update_detection, DetectionCreate
+from app.api.kafka import producer
+
 # URL của API
 EXTERNAL_API_URL = "https://camera-service.onrender.com/cameras?is_enabled=true"
 
@@ -80,22 +82,27 @@ async def get_image_and_detect(url):
         logger.error("Error in fetching or detecting image: {}", e)
         return None
 
-NOTIFICATION_ENDPOINT = "https://camera-service.onrender.com/cameras/send-email/"
+# NOTIFICATION_ENDPOINT = "https://camera-service.onrender.com/cameras/send-email/"
+# async def send_notification(cameraId:str):
+#     """Send a notification to the user."""
+#     async with httpx.AsyncClient() as client:
+#         try:
+#             response = await client.post(
+#                 NOTIFICATION_ENDPOINT + cameraId,
+#                 headers={"accept": "application/json"},
+#                 data=""
+#             )
+#             response.raise_for_status()
+#             logger.info("Notification sent successfully.")
+#         except httpx.HTTPError as http_err:
+#             logger.error(f"HTTP error occurred while sending notification: {http_err}")
+#         except Exception as err:
+#             logger.error(f"An error occurred while sending notification: {err}")
+
 async def send_notification(cameraId:str):
-    """Send a notification to the user."""
-    async with httpx.AsyncClient() as client:
-        try:
-            response = await client.post(
-                NOTIFICATION_ENDPOINT + cameraId,
-                headers={"accept": "application/json"},
-                data=""
-            )
-            response.raise_for_status()
-            logger.info("Notification sent successfully.")
-        except httpx.HTTPError as http_err:
-            logger.error(f"HTTP error occurred while sending notification: {http_err}")
-        except Exception as err:
-            logger.error(f"An error occurred while sending notification: {err}")
+    TOPIC_NAME = "send_mail"
+    message = cameraId
+    producer.send(TOPIC_NAME, message.encode('utf-8'))
 
 async def update_flood_points():
 
@@ -119,7 +126,7 @@ async def update_flood_points():
                 detect = DetectionCreate(result= "Flooding" if flood_level == 0 else "Normal", camera_id=camera["_id"])
                 await create_or_update_detection(detect)
                 if flood_level == 0:
-                    send_notification(camera["_id"])
+                    await send_notification(camera["_id"])
                     
                     existing_point = db.query(models.FloodPoint).filter(
                         models.FloodPoint.latitude == latitude,

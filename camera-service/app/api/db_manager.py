@@ -13,6 +13,8 @@ from fastapi import HTTPException
 from uuid import uuid4
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, From, To
+import asyncio
+
 camera_status = {}
 
 def truncate_string(value: str, max_length: int = 50) -> str:
@@ -174,6 +176,11 @@ async def follow_camera_service(db: Database, request: FollowRequest):
     camera_query = await db.fetch_one(
         select([cameras]).where(cameras.c._id == request.cameraId)
     )
+
+    if camera_query is None:
+            query = select([demoCameras]).where(demoCameras.c._id == request.cameraId)
+            camera_query = await db.fetch_one(query)
+        
     if camera_query is None:
         raise HTTPException(status_code=404, detail="Camera does not exist")
 
@@ -202,8 +209,6 @@ async def follow_camera_service(db: Database, request: FollowRequest):
     return follow_entry
 
 async def unfollow_camera_service(db: Database, cameraId: str, userId: str):
-    print(cameraId)
-    print(userId)
     query = delete(follow_camera).where(
         and_(
             follow_camera.c.cameraId == cameraId,
@@ -222,65 +227,95 @@ async def unfollow_camera_service(db: Database, cameraId: str, userId: str):
 
 async def send_email(camera_id: str, db: Database):
     try:
-        # Fetch the camera details (using fetch_one since we expect a single camera)
-        camera_query = await db.fetch_one(
-            select([follow_camera]).where(
-                follow_camera.c.cameraId == camera_id)
+        # Fetch all camera follow entries for the given camera_id
+        camera_queries = await db.fetch_all(
+            select([follow_camera]).where(follow_camera.c.cameraId == camera_id)
         )
 
-        if not camera_query:
+        if not camera_queries:
             raise HTTPException(
                 status_code=404, detail="No matching rows found for the given camera ID"
             )
 
-        user_email = camera_query.get("userEmail")
-        if not user_email:
+        # Extract unique user emails
+        user_emails = list({query.get("userEmail") for query in camera_queries if query.get("userEmail")})
+        
+        if not user_emails:
             raise HTTPException(
-                status_code=400, detail="No userEmail address found for the given camera ID"
+                status_code=400, detail="No userEmail addresses found for the given camera ID"
             )
 
-        # Fetch camera details from another table
+        # Fetch camera details from the primary cameras table
         camera_detail_query = await db.fetch_one(
             select([cameras]).where(cameras.c._id == camera_id)
         )
 
+        # If not found in primary, fetch from demoCameras
+        if camera_detail_query is None:
+            camera_detail_query = await db.fetch_one(
+                select([demoCameras]).where(demoCameras.c._id == camera_id)
+            )
+
         if not camera_detail_query:
             raise HTTPException(
-                status_code=404, detail="No matching rows found for the given camera ID"
+                status_code=404, detail="No camera details found for the given camera ID"
             )
 
         # Convert datetime fields to string if they exist
         camera_details = dict(camera_detail_query)
         if isinstance(camera_details.get('lastmodified'), datetime):
             camera_details['lastmodified'] = camera_details['lastmodified'].strftime(
-                '%Y-%m-%d %H:%M:%S')
+                '%Y-%m-%d %H:%M:%S'
+            )
 
         sg = SendGridAPIClient(
-            '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'
+            api_key='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'  # Replace with your actual SendGrid API key
         )
 
-        # Send the email to the user
-        message = Mail(
-            from_email=From('y.levan@ncc.asia', 'Safe Move Support'),
-            to_emails=To(user_email),
-        )
-        message.template_id = 'd-764126dba9db453da61ce904a3afb5b6'
+        async def send_single_email(user_email: str):
+            try:
+                message = Mail(
+                    from_email=From('y.levan@ncc.asia', 'Safe Move Support'),
+                    to_emails=To(user_email),
+                )
+                message.template_id = 'd-764126dba9db453da61ce904a3afb5b6'
 
-        # Dynamic template data for the email
-        message.dynamic_template_data = {
-            # Now works because camera_query is a dict
-            "username": camera_query.get("userName", "User"),
-            **camera_details,
-        }
+                # Dynamic template data for the email
+                message.dynamic_template_data = {
+                    "username": next(
+                        (query.get("userName", "User") for query in camera_queries if query.get("userEmail") == user_email),
+                        "User"
+                    ),
+                    **camera_details,
+                }
 
-        # Send the email
-        response = sg.send(message)
+                # Send the email
+                response = sg.send(message)
+                
+                if response.status_code >= 400:
+                    print(f"Failed to send email to {user_email}: {response.status_code}")
+                else:
+                    print(f"Email sent successfully to {user_email}")
+            except Exception as e:
+                print(f"An error occurred while sending email to {user_email}: {str(e)}")
+                # Optionally, handle individual email sending failures without stopping the entire process
+
+        # Create a list of coroutine tasks for sending emails
+        email_tasks: List[asyncio.Task] = [
+            asyncio.create_task(send_single_email(email)) for email in user_emails
+        ]
+
+        # Await all email sending tasks
+        await asyncio.gather(*email_tasks)
 
         return {
-            "message": "Email sent successfully",
-            "email": user_email,
+            "message": "Emails sent successfully",
+            "emails": user_emails,
         }
 
+    except HTTPException as http_exc:
+        # Re-raise HTTP exceptions to be handled by FastAPI
+        raise http_exc
     except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        raise HTTPException(status_code=500, detail="Failed to send the email")
+        print(f"An unexpected error occurred: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to send the emails")
