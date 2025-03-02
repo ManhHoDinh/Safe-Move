@@ -1,17 +1,15 @@
-FROM python:3.8-slim
+FROM tiangolo/uvicorn-gunicorn:python3.10
 
 WORKDIR /app
 
 COPY ./requirements.txt /app/requirements.txt
+RUN apt update && \
+    apt install -y htop libgl1-mesa-glx libglib2.0-0
 
-RUN apt-get update \
-    && apt-get install gcc -y \
-    && apt-get clean
 
-RUN pip install -r /app/requirements.txt \
-    && rm -rf /root/.cache/pip
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY . /app/
 
-CMD ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8001"]
-EXPOSE 8001
+CMD ["uvicorn", "app.main:app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+EXPOSE 8000

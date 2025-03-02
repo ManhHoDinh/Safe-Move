@@ -1,21 +1,16 @@
 from typing import List, Dict, Optional
 from fastapi import APIRouter, HTTPException, Depends
-from app.api.models import Camera
+from app.api.models import Camera, FollowRequest, FollowCamera, CreateCamera
 from app.api import db_manager
 from app.api.db_manager import DBManager
 from sqlalchemy.orm import Session
 from app.api.db import get_db
 from databases import Database
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, From, To, TemplateId, Substitution
+from sqlalchemy import select
 
 cameras = APIRouter()
-
-
-@cameras.get("/", response_model=List[Camera])
-async def get_all_cameras(db: Session = Depends(get_db)):
-    db_manager = DBManager(db)
-    return await db_manager.fetch_cameras()
-
-
 @cameras.get("/cameras", response_model=List[Camera])
 async def list_cameras(
     is_enabled: Optional[bool] = None,
@@ -23,6 +18,47 @@ async def list_cameras(
     db=Depends(get_db)
 ) -> List[Camera]:
     return await db_manager.get_camera_list(db, is_enabled, search)
+
+@cameras.get("/demo-cameras", response_model=List[Camera])
+async def list_demo_cameras(
+    db=Depends(get_db)
+) -> List[Camera]:
+    return await db_manager.get_demo_cameras(db)
+
+@cameras.post("/demo-cameras", response_model=Camera)
+async def create_demo_camera(
+    camera: CreateCamera,
+    db=Depends(get_db)
+) -> Camera:
+    return await db_manager.create_demo_camera(db, camera)
+
+
+@cameras.put("/demo-cameras/{camera_id}", response_model=Camera)
+async def update_demo_camera(
+    camera: Camera,
+    db=Depends(get_db)
+) -> Camera:
+    return await db_manager.update_demo_camera(db,  camera)
+
+@cameras.delete("/demo-cameras/{camera_id}")
+async def delete_demo_camera(
+    camera_id: str,
+    db=Depends(get_db)
+):
+    return await db_manager.delete_demo_camera(db, camera_id)
+
+@cameras.get("/follows", response_model=List[FollowRequest])
+async def list_follows(
+    db=Depends(get_db)
+) -> List[FollowRequest]:
+    return await db_manager.get_follows(db)
+
+@cameras.get("/follow/{user_id}")
+async def get_follow_camera(userId: str, db=Depends(get_db)):
+    follow = await db_manager.get_follow_camera(db, userId)
+    if not follow:
+        raise HTTPException(status_code=404, detail="Follow camera not found")
+    return follow
 
 
 @cameras.get("/cameras/{camera_id}")
@@ -50,3 +86,29 @@ async def modify_multiple_camera_status(
     except Exception as e:
         raise HTTPException(
             status_code=500, detail=f"Internal server error: {str(e)}")
+
+
+@cameras.post("/cameras/follow")
+async def follow_camera(
+    requestInfo: FollowRequest,
+    db: Database = Depends(get_db)
+):
+    try:
+        new_follow = await db_manager.follow_camera_service(db, requestInfo)
+        return new_follow
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@cameras.delete("/cameras/follow")
+async def unfollow_camera(cameraId: str, userId: str, db=Depends(get_db)):
+    deleted = await db_manager.unfollow_camera_service(db, cameraId, userId)
+    if not deleted:
+        raise HTTPException(
+            status_code=404, detail="Follow camera not found")
+    return {"message": "Follow camera deleted successfully"}
+
+
+@cameras.post("/cameras/send-email/{_id}")
+async def send_email(_id: str, db=Depends(get_db)):
+    await db_manager.send_email(_id, db)

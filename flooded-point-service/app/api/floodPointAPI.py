@@ -35,8 +35,11 @@ def create_flood_point(point: schemas.FloodPointCreate, db: Session = Depends(ge
         latitude=point.latitude,
         longitude=point.longitude,
         flood_level=point.flood_level,
-        expiration_time=point.expiration_time
+        expiration_time=point.expiration_time,
+        flood_information_id=point.flood_information_id
     )
+    
+    print(f"db_point: {db_point}")
     db.add(db_point)
     db.commit()
     db.refresh(db_point)
