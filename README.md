@@ -6,7 +6,7 @@
 
 > 📰 **"UIT-VisDrone-Flood: A Synthesized Aerial Vehicle Detection Dataset Under Flood Conditions"**  
 > 📍 Published at: _13th International Conference on Control, Automation and Information Sciences (ICCAIS 2024)_  
-> 📄 [IEEE Xplore](https://ieeexplore.ieee.org/document/10814214) | [PDF Download](https://ami.gov.vn/wp-content/uploads/2024/11/TA03-2-compressed.pdf)
+> 📄 [IEEE Xplore](https://ieeexplore.ieee.org/document/10814214) | [PDF](https://ami.gov.vn/wp-content/uploads/2024/11/TA03-2-compressed.pdf)
 
 ### 🎯 Objective
 
