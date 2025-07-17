@@ -52,7 +52,7 @@ Safe-Move is a real-time AI-integrated system designed to monitor urban flooding
 - View real-time flood maps and camera feeds.
 - Receive notifications and reroute suggestions.
 
-👉 See [Mobile App Setup Guide](./Mobile%20Installation.md)
+👉 See [Mobile App Setup Guide](./Mobile/Installation.md)
 
 ## 🧠 Challenges Solved
 - ✅ Real-time monitoring of 600+ asynchronous camera feeds.
