@@ -1,0 +1,25 @@
+export const Colors = {
+  backgroundColor: "#F5F8FF",
+  white: "#FFFFFF",
+  black: "#000000",
+  echoBlue: "#A3AFCF",
+  kingTide: "#2E747C",
+  primary: {
+    50: "#E5F4F5",
+    100: "#CFEAED",
+    200: "#9BD3DA",
+    300: "#6ABEC8",
+    400: "#41A4AF",
+    500: "#2E747C",
+    600: "#255E64",
+    700: "#1C464A",
+    800: "#122D30",
+    900: "#0A181A",
+    950: "#040A0B",
+  },
+  pickFord: "#C6F6D5",
+  kaitokeGreen: "#22543D",
+  wePeep: "#FED7D7",
+  loverKiss: "#8F3A3A",
+  disabledColor: 'rgba(0, 0, 0, 0.04)'
+};
