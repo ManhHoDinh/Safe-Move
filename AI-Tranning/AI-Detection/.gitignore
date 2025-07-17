@@ -1,0 +1,18 @@
+# Virtual envirionment
+/myenv
+/venv 
+
+# Data
+/data
+video/*
+!video/.gitkeep
+
+out_video/*
+!out_video/.gitkeep
+
+# Cache
+__pycache__/
+
+# Ignore all log
+*.log
+/flagged
