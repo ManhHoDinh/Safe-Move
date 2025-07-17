@@ -89,4 +89,4 @@ flutter test
 Part of the graduation thesis at
 University of Information Technology – VNU HCM
 
-📘 [Back to Project Overview](../README.md)
+📘 [Back to Project Overview](../)

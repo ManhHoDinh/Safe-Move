@@ -22,11 +22,12 @@ Safe-Move is a real-time AI-integrated system designed to monitor urban flooding
 
 ## 🧩 System Modules
 
-### 🧠 AI Monitoring Service
+### 🧠 [AI Monitoring Service](./AI-Tranning/README.md)
 - Continuously analyzes traffic camera images.
 - Detects flooded roads using CNN.
 - Updates interactive flood maps.
 - Triggers alerts to affected users.
+
 
 ### ⚙️ Backend (FastAPI)
 - Built with **microservices architecture**, each responsible for a specific domain (flood detection, camera control, email, notification, authentication).
