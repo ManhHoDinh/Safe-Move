@@ -1,18 +1,19 @@
-# 🛡️ Safe-Move Project Overview
+## 🛡️ Safe-Move Project Overview
 
 > **AI-powered Flood Monitoring and Smart Navigation System for Ho Chi Minh City**  
-> 🎓 Graduation Thesis Score: **9.9 / 10**
+> 🎓 Graduation Thesis from **University of Information Technology - Vietnam National University Ho Chi Minh City**  
+> 🏆 Final Score: **9.9 / 10**
 
-## 🎯 Objective
+### 🎯 Objective
 Safe-Move is a real-time AI-integrated system designed to monitor urban flooding and support traffic navigation. The system empowers both citizens and local authorities with accurate, live information about flood conditions across the city.
 
-## 📊 Key Statistics
+### 📊 Key Statistics
 - 🔍 **600+ traffic cameras** monitored in real time.
 - 🧠 **AI flood detection accuracy**: ~90%.
 - 📲 **Notification delay**: < 5 seconds from detection to alert.
 - 📡 **12-second refresh** on camera snapshots.
 
-## 🧠 AI Integration
+### 🧠 AI Integration
 - **CNN-based flood detection model** using transfer learning.
 - Real-time inference on camera feeds.
 - Automatic flood zone classification.
