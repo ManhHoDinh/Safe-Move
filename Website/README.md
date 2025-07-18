@@ -1,46 +1,115 @@
-# Getting Started with Create React App
+# 🌐 Safe-Move Website Frontend
+> 🎓 Part of Graduation Thesis – University of Information Technology – VNU HCM  
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+This is the frontend website of the Safe-Move system, a platform that visualizes real-time flood detection data collected from over 600 traffic surveillance cameras across Ho Chi Minh City. The website allows users to track flood points and view flood-prone routes in real-time.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- 📍 Map interface for real-time flood point visualization
+- 🗺️ Integration with HERE Maps API and Google Maps
+- ⚡ View high-risk flooded zones across the city
+- 📸 Image preview from camera snapshots
+- 🔗 Integrated with AI-powered backend for real-time detection
+- 🌐 Hosted and responsive on modern web browsers
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+---
 
-### `npm test`
+## 🛠️ Tech Stack
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+- **React.js** – UI framework
+- **TailwindCSS** – Utility-first CSS for styling
+- **Axios** – API requests
+- **HERE Maps API** – Interactive maps and routing
+- **Google Maps SDK** – (Optional) Map fallback and routing support
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📁 Project Structure
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
+Website/
+├── public/                 # Static assets
+├── src/
+│   ├── components/         # Reusable UI components
+│   ├── pages/              # Main application pages
+│   ├── services/           # API calls to backend
+│   ├── App.js              # Root component
+│   └── index.js            # App entry point
+├── .env                   # API keys and config
+├── package.json
+└── README.md              # You are here
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+## 🚀 Getting Started
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### 1. Clone the Repository
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+git clone https://github.com/ManhHoDinh/Safe-Move-BE.git
+cd Safe-Move-BE/Website
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### 2. Install Dependencies
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+```bash
+npm install
+```
 
-## Learn More
+### 3. Configure Environment
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Create a `.env` file with:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+```env
+REACT_APP_HERE_API_KEY=your_here_api_key
+REACT_APP_BACKEND_URL=https://your-api-url.com
+```
+
+### 4. Run the App
+
+```bash
+npm start
+```
+
+Navigate to `http://localhost:3000` in your browser.
+
+---
+
+## 🌐 Deployment
+
+You can deploy to any static hosting provider such as **Vercel**, **Netlify**, or **GitHub Pages**.
+
+To build for production:
+
+```bash
+npm run build
+```
+
+---
+
+## 🔌 API Integration
+
+The website connects with the backend prediction server via REST API:
+
+- `POST /predict`: Sends image for flood detection
+- `GET /health`: Backend server health check
+
+Backend: [Safe-Move Backend Module](https://github.com/ManhHoDinh/safe-move-ai)
+
+---
+
+## 📚 Reference
+
+- 🎓 Paper: [IEEE Xplore](https://ieeexplore.ieee.org/document/10814214)  
+- 🗃️ Dataset: [UIT-Flooded-VisDrone on Roboflow](https://universe.roboflow.com/uit-2pejh/uit-flooded-visdrone)  
+- 🧪 YOLOv10 Model Demo: [Hugging Face Space](https://huggingface.co/spaces/ManhHoDinh/floodTrafficSolution)
+
+---
+> Developed by Hồ Đình Mạnh & Lê Thị Bích Hằng – UIT – VNU HCM
+
+📘 [Back to Project Overview](../)
+

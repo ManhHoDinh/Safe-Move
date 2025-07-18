@@ -6,7 +6,7 @@
 
 > 📰 **"UIT-VisDrone-Flood: A Synthesized Aerial Vehicle Detection Dataset Under Flood Conditions"**  
 > 📍 Published at: _13th International Conference on Control, Automation and Information Sciences (ICCAIS 2024)_  
-> 📄 [IEEE Xplore](https://ieeexplore.ieee.org/document/10814214) | [PDF](https://ami.gov.vn/wp-content/uploads/2024/11/TA03-2-compressed.pdf)
+> 📄 [IEEE Xplore](https://ieeexplore.ieee.org/document/10814214) | [PDF](https://ami.gov.vn/wp-content/uploads/2024/11/TA03-2-compressed.pdf) | [AI Guide](./AI-Tranning/README.md)
 
 ### 🎯 Objective
 
@@ -29,12 +29,14 @@ Safe-Move is a real-time AI-integrated system designed to monitor urban flooding
 
 ## 🧩 System Modules
 
-### 🧠 [AI Monitoring Service](./AI-Tranning/README.md)
+### 🧠 AI Monitoring Service
 
 - Continuously analyzes traffic camera images.
 - Detects flooded roads using CNN.
 - Updates interactive flood maps.
 - Triggers alerts to affected users.
+
+👉 See [AI Guide](./AI-Tranning/README.md)
 
 ### ⚙️ Backend (FastAPI)
 
@@ -43,7 +45,7 @@ Safe-Move is a real-time AI-integrated system designed to monitor urban flooding
 - Hosts core business logic, authentication, API routes.
 - Interfaces with PostgreSQL, Redis, and external services.
 
-👉 See [Backend Installation Guide](./Backend%20Installation.md)
+👉 See [Backend Installation Guide](./Backend/README.md)
 
 ### 🌐 Admin Web Dashboard
 
@@ -52,7 +54,7 @@ Safe-Move is a real-time AI-integrated system designed to monitor urban flooding
 - Review and verify citizen flood reports.
 - Send manual alerts if necessary.
 
-👉 See [Web Admin Setup Guide](./Website%20Installation.md)
+👉 See [Web Admin Setup Guide](./Website/README.md)
 
 ### 📱 Mobile App (Flutter)
 

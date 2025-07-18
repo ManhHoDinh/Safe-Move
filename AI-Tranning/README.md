@@ -174,4 +174,6 @@ A total of **7411 synthesized flood images** were generated using:
 Graduation Project – University of Information Technology  
 Vietnam National University, Ho Chi Minh City  
 
+> Developed by Hồ Đình Mạnh & Lê Thị Bích Hằng – UIT – VNU HCM
+
 📘 [Back to Project Overview](../)

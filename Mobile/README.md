@@ -1,5 +1,7 @@
 # 📱 Safe-Move Mobile App (Flutter)
 
+> 🎓 Part of Graduation Thesis – University of Information Technology – VNU HCM  
+
 This is the official mobile application of the Safe-Move system — a smart flood monitoring and navigation assistant for citizens. It provides real-time flood map views, route suggestions to avoid flooded zones, and lets users report flooding incidents with location and photos.
 
 ---
@@ -82,11 +84,7 @@ flutter test
 - Flood alert logic uses geolocation (make sure user grants permission).
 
 
-## 👨‍💻 Contributors
-- Hồ Đình Mạnh
-- Lê Thị Bích Hằng
-
-Part of the graduation thesis at
-University of Information Technology – VNU HCM
+---
+> Developed by Hồ Đình Mạnh & Lê Thị Bích Hằng – UIT – VNU HCM
 
 📘 [Back to Project Overview](../)
