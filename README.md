@@ -12,9 +12,10 @@
 
 Safe-Move is a real-time AI-integrated system designed to monitor urban flooding and support traffic navigation. The system empowers both citizens and local authorities with accurate, live information about flood conditions across the city.
 
-### 📊 Key Statistics
+.### 📊 Key Statistics
 
 - 🔍 **600+ traffic cameras** monitored in real time.
+- 🧪 Created a **synthetic dataset of 7,411 images** simulating flood conditions.
 - 🧠 **AI flood detection accuracy**: ~90%.
 - 📲 **Notification delay**: < 5 seconds from detection to alert.
 - 📡 **12-second refresh** on camera snapshots.
