@@ -87,7 +87,6 @@ Safe-Move is a real-time AI-integrated system designed to monitor urban flooding
 ## 📄 References
 
 - 📘 [Scientific Paper Summary](./Scientific%20Paper%20Description.md)
-- 📝 [Thesis Final Report (Vietnamese)](https://drive.google.com/drive/folders/1tiA8bjnjs8pQN7c4e3TK5ZSe9LWKqo6b)
 
 ## 📅 Timeline
 
