@@ -84,10 +84,11 @@ Safe-Move is a real-time AI-integrated system designed to monitor urban flooding
 - **Render**: App deployment.
 - **Neon DB**: Managed PostgreSQL instance.
 
-## 📄 References
+## 📚 Reference
 
-- 📘 [Scientific Paper Summary](./Scientific%20Paper%20Description.md)
-
+- 🎓 Paper: [IEEE Xplore](https://ieeexplore.ieee.org/document/10814214)  | [PDF](https://ami.gov.vn/wp-content/uploads/2024/11/TA03-2-compressed.pdf)
+- 🗃️ Dataset: [UIT-Flooded-VisDrone on Roboflow](https://universe.roboflow.com/uit-2pejh/uit-flooded-visdrone)  
+- 🧪 YOLOv10 Model Demo: [Hugging Face Space](https://huggingface.co/spaces/ManhHoDinh/floodTrafficSolution)
 ## 📅 Timeline
 
 - **Sep 2024**: Planning, research, architecture.
