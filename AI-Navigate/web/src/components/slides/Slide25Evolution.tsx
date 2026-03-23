@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Shield, Ambulance, Truck, Car, Globe } from 'lucide-react';
+import { Shield, Ambulance, Truck, Car, Globe, ExternalLink, FileText } from 'lucide-react';
 import SlideLayout from './SlideLayout';
 
 const integrations = [
@@ -134,17 +134,52 @@ export default function Slide25Evolution() {
             })}
           </motion.div>
 
-          {/* Bottom quote */}
-          <motion.p
-            className="text-lg text-neutral-300 italic max-w-3xl text-center leading-relaxed"
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 1.2 }}
+          {/* Published Research Reference */}
+          <motion.div
+            className="w-full max-w-2xl bg-safe-green/5 border border-safe-green/20 rounded-xl p-4"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 1.0 }}
             viewport={{ once: true }}
           >
-            The operating system for urban resilience — not just flood, not just
-            traffic, but every environmental disruption.
-          </motion.p>
+            <div className="flex items-start gap-3">
+              <FileText className="w-5 h-5 text-safe-green flex-shrink-0 mt-0.5" strokeWidth={2} />
+              <div>
+                <p className="text-xs font-semibold text-safe-green uppercase tracking-wider mb-1">
+                  Published at IEEE ICCAIS 2024
+                </p>
+                <p className="text-sm text-neutral-300 leading-relaxed">
+                  "UIT-VisDrone-Flood" — 7,411 synthetic flood images via ClimateGAN + SAM. Score: <span className="text-white font-semibold">9.9/10</span>
+                </p>
+                <div className="flex items-center gap-4 mt-2">
+                  <a
+                    href="https://ieeexplore.ieee.org/document/10814214"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-flood-cyan hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" /> IEEE Xplore
+                  </a>
+                  <a
+                    href="https://universe.roboflow.com/uit-2pejh/uit-flooded-visdrone"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-flood-cyan hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" /> Dataset
+                  </a>
+                  <a
+                    href="https://huggingface.co/spaces/ManhHoDinh/floodTrafficSolution"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-flood-cyan hover:text-white transition-colors"
+                  >
+                    <ExternalLink className="w-3 h-3" /> Live Demo
+                  </a>
+                </div>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </SlideLayout>

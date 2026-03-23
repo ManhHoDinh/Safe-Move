@@ -119,7 +119,7 @@ export default function SlideThankYou() {
             Ho Dinh Manh
           </span>
           <span className="text-neutral-500 text-sm font-light tracking-wider">
-            Đồ Án Tốt Nghiệp — UIT VNU-HCM
+            Graduation Thesis — UIT VNU-HCM
           </span>
           <span className="text-safe-green text-xs font-semibold tracking-wider mt-0.5">
             9.9/10 · Published at IEEE ICCAIS 2024

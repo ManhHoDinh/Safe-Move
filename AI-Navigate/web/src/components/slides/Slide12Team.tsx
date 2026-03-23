@@ -39,15 +39,9 @@ export default function Slide12Team() {
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
         >
-          <img
-            src="/avatar.jpg"
-            alt="Ho Dinh Manh"
-            className="w-14 h-14 rounded-full object-cover border-2 border-flood-cyan/40 flex-shrink-0"
-            style={{ boxShadow: '0 0 24px rgba(6,182,212,0.2)' }}
-          />
           <div>
             <h2 className="text-4xl font-bold text-white">
-              Solo Builder. <span className="text-flood-cyan">Full-Stack.</span>
+              Team &amp; <span className="text-flood-cyan">Achievements</span>
             </h2>
             <p className="text-neutral-400 text-sm mt-0.5">
               Hồ Đình Mạnh &amp; Lê Thị Bích Hằng — UIT VNU-HCM

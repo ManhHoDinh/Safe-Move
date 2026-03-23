@@ -152,7 +152,7 @@ export default function Slide01Title() {
           Learn
         </p>
         <div className="flex items-center gap-2 mt-1">
-          <span className="text-xs text-neutral-500 font-medium tracking-wide">Đồ Án Tốt Nghiệp — UIT VNU-HCM</span>
+          <span className="text-xs text-neutral-500 font-medium tracking-wide">Graduation Thesis — UIT VNU-HCM</span>
           <span className="text-neutral-700">|</span>
           <span className="text-xs text-safe-green font-semibold tracking-wide">9.9/10 · IEEE ICCAIS 2024</span>
         </div>

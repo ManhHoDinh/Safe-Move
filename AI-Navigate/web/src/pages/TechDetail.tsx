@@ -587,7 +587,7 @@ Response 200:
             </a>
           </div>
           <p className="text-xs text-neutral-600 mt-6">
-            SafeMove AI — Đồ Án Tốt Nghiệp — UIT VNU-HCM · IEEE ICCAIS 2024
+            SafeMove AI — Graduation Thesis — UIT VNU-HCM · IEEE ICCAIS 2024
           </p>
         </motion.div>
       </main>
